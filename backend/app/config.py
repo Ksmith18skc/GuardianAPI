@@ -5,7 +5,7 @@ import json
 import os
 from pathlib import Path
 from typing import Optional, Union
-from pydantic import field_validator
+from pydantic import field_validator, computed_field
 from pydantic_settings import BaseSettings
 
 
@@ -51,41 +51,73 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
     
     # CORS Configuration
-    # CORS_ORIGINS accepts multiple formats:
-    #   1. JSON array: ["https://example.com", "http://localhost:3000"]
-    #   2. Comma-separated string: "https://example.com,http://localhost:3000"
-    #   3. Empty/None: Falls back to default list
+    # CORS_ORIGINS is stored as a string to prevent Pydantic Settings from attempting
+    # automatic JSON parsing (which fails for comma-separated strings).
+    # 
+    # Accepts multiple formats:
+    #   1. JSON array string: '["https://example.com", "http://localhost:3000"]'
+    #   2. Comma-separated string: 'https://example.com,http://localhost:3000'
+    #   3. Empty/None: Falls back to default string
     # 
     # Recommended format for Render: Comma-separated string
-    # Example: CORS_ORIGINS=https://guardian.korymsmith.dev,http://localhost:5173
-    CORS_ORIGINS: list = [
-        "https://guardian.korymsmith.dev",
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ]
+    # Example: CORS_ORIGINS=https://guardian.korymsmith.dev
+    # 
+    # Use settings.cors_origins_list to get the parsed list for CORS middleware
+    CORS_ORIGINS: str = "https://guardian.korymsmith.dev,http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000,http://127.0.0.1:3000"
     
     @field_validator('CORS_ORIGINS', mode='before')
     @classmethod
-    def parse_cors_origins(cls, v: Union[str, list, None]) -> list:
+    def parse_cors_origins(cls, v: Union[str, None]) -> str:
         """
-        Safely parse CORS_ORIGINS from environment variable.
+        Safely normalize CORS_ORIGINS from environment variable to a comma-separated string.
         
         Handles:
-        - JSON array string: '["https://example.com"]'
-        - Comma-separated string: 'https://example.com,http://localhost:3000'
-        - Empty string or None: Returns default list
-        - Already parsed list: Returns as-is
+        - JSON array string: '["https://example.com"]' → 'https://example.com'
+        - Comma-separated string: 'https://example.com,http://localhost:3000' → normalized
+        - Empty string or None: Returns default comma-separated string
         
-        Never raises exceptions - always returns a valid list.
+        Never raises exceptions - always returns a valid comma-separated string.
         """
-        # If already a list, return as-is
-        if isinstance(v, list):
-            return v
-        
         # If None or empty string, return default
         if not v or (isinstance(v, str) and not v.strip()):
+            return "https://guardian.korymsmith.dev,http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000,http://127.0.0.1:3000"
+        
+        # Ensure it's a string
+        if not isinstance(v, str):
+            v = str(v)
+        
+        v = v.strip()
+        
+        # Try parsing as JSON first (handles JSON array strings)
+        if v.startswith('[') and v.endswith(']'):
+            try:
+                parsed = json.loads(v)
+                if isinstance(parsed, list):
+                    # Convert JSON array to comma-separated string
+                    origins = [origin.strip() for origin in parsed if origin.strip()]
+                    if origins:
+                        return ",".join(origins)
+            except (json.JSONDecodeError, ValueError):
+                # If JSON parsing fails, treat as comma-separated string
+                pass
+        
+        # Normalize comma-separated string (remove extra spaces, filter empty)
+        origins = [origin.strip() for origin in v.split(",") if origin.strip()]
+        if origins:
+            return ",".join(origins)
+        
+        # Fallback to default if all else fails
+        return "https://guardian.korymsmith.dev,http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000,http://127.0.0.1:3000"
+    
+    @computed_field
+    @property
+    def cors_origins_list(self) -> list[str]:
+        """
+        Convert CORS_ORIGINS string to a list for use in CORS middleware.
+        
+        Returns a list of allowed origins, always valid (never empty).
+        """
+        if not self.CORS_ORIGINS or not self.CORS_ORIGINS.strip():
             return [
                 "https://guardian.korymsmith.dev",
                 "http://localhost:5173",
@@ -94,27 +126,8 @@ class Settings(BaseSettings):
                 "http://127.0.0.1:3000",
             ]
         
-        # If it's a string, try to parse it
-        if isinstance(v, str):
-            v = v.strip()
-            
-            # Try parsing as JSON first (handles JSON array strings)
-            if v.startswith('[') and v.endswith(']'):
-                try:
-                    parsed = json.loads(v)
-                    if isinstance(parsed, list):
-                        return [origin.strip() for origin in parsed if origin.strip()]
-                except (json.JSONDecodeError, ValueError):
-                    # If JSON parsing fails, fall through to comma-separated parsing
-                    pass
-            
-            # Parse as comma-separated string
-            origins = [origin.strip() for origin in v.split(",") if origin.strip()]
-            if origins:
-                return origins
-        
-        # Fallback to default if all else fails
-        return [
+        origins = [origin.strip() for origin in self.CORS_ORIGINS.split(",") if origin.strip()]
+        return origins if origins else [
             "https://guardian.korymsmith.dev",
             "http://localhost:5173",
             "http://127.0.0.1:5173",
