@@ -6097,14 +6097,151 @@ _**Agent (model default, mode Agent)**_
 ---
 
 
+Checking the terminal mode header styling, then updating all "GuardianAPI" instances to match.
+
 
 ---
 
-<tool-use data-tool-type="unknown" data-tool-name="read_file">
-<details>
-<summary>Tool use: **read_file**</summary>
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: frontend/src/AppV2.tsx</summary>
 
-Status: **loading**
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="search" data-tool-name="grep">
+<details>
+<summary>Tool use: **grep** • Grep for "GuardianAPI|GUARDIAN.*API" in "frontend/src" • 8 matches</summary>
+
+Output mode: content
+
+
+| File | Content | Line |
+|------|------|------|
+| `frontend/src\App.tsx` | `* Main App component - GuardianAPI Playground Mode` | L2 |
+| `frontend/src\components\PlaygroundWelcome.tsx` | `Welcome to GuardianAPI Playground` | L59 |
+| `frontend/src\components\PlaygroundWelcome.tsx` | `GuardianAPI combines <strong style=\{{ color: 'var(--neon-primary)' \}}>LASSO-based sexism classification</strong>,\{' '\}` | L94 |
+| `frontend/src\AppV2.tsx` | `* AppV2 component - GuardianAPI Terminal Mode` | L3 |
+| `frontend/src\AppV2.tsx` | `GUARDIAN<span style=\{{ color: 'var(--ci-primary)' \}}>API</span>` | L106 |
+| `frontend/src\components\layout\Header.tsx` | `GuardianAPI Playground` | L36 |
+| `frontend/src\services\api.ts` | `* API service for GuardianAPI` | L2 |
+| `frontend/src\types\api.ts` | `* TypeScript types for GuardianAPI responses` | L2 |
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: frontend/src/components/layout/Header.tsx</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Updating all instances to match the terminal mode styling, where "API" is highlighted in orange:
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: frontend/src/AppV2.tsx</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **code_edit** • Edit file: frontend/src/components/layout/Header.tsx</summary>
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -34,5 +34,5 @@
+          }}
+        &gt;
+-         GuardianAPI Playground
++         Guardian&lt;span style={{ color: &#39;var(--neon-primary)&#39; }}&gt;API&lt;/span&gt; Playground
+        &lt;/h1&gt;
+        &lt;div
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **code_edit** • Edit file: frontend/src/components/PlaygroundWelcome.tsx</summary>
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -57,5 +57,5 @@
+              }}
+            &gt;
+-             Welcome to GuardianAPI Playground
++             Welcome to Guardian&lt;span style={{ color: &#39;var(--neon-tertiary)&#39; }}&gt;API&lt;/span&gt; Playground
+            &lt;/h2&gt;
+            &lt;p
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **code_edit** • Edit file: frontend/src/components/PlaygroundWelcome.tsx</summary>
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -92,5 +92,5 @@
+            }}
+          &gt;
+-           GuardianAPI combines &lt;strong style={{ color: &#39;var(--neon-primary)&#39; }}&gt;LASSO-based sexism classification&lt;/strong&gt;,{&#39; &#39;}
++           Guardian&lt;span style={{ color: &#39;var(--neon-tertiary)&#39; }}&gt;API&lt;/span&gt; combines &lt;strong style={{ color: &#39;var(--neon-primary)&#39; }}&gt;LASSO-based sexism classification&lt;/strong&gt;,{&#39; &#39;}
+            &lt;strong style={{ color: &#39;var(--neon-primary)&#39; }}&gt;BERT toxicity detection&lt;/strong&gt;, and{&#39; &#39;}
+            &lt;strong style={{ color: &#39;var(--neon-primary)&#39; }}&gt;rule-based heuristics&lt;/strong&gt; to provide comprehensive content moderation.
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="search" data-tool-name="grep">
+<details>
+<summary>Tool use: **grep** • Grep for "GuardianAPI" in "frontend/src" • 4 matches</summary>
+
+Output mode: content
+
+
+| File | Content | Line |
+|------|------|------|
+| `frontend/src\App.tsx` | `* Main App component - GuardianAPI Playground Mode` | L2 |
+| `frontend/src\AppV2.tsx` | `* AppV2 component - GuardianAPI Terminal Mode` | L3 |
+| `frontend/src\services\api.ts` | `* API service for GuardianAPI` | L2 |
+| `frontend/src\types\api.ts` | `* TypeScript types for GuardianAPI responses` | L2 |
 
 
 </details>
@@ -6117,24 +6254,56 @@ Status: **loading**
 ---
 
 
-
----
-
+Updating comments and other instances:
 
 
 ---
 
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: frontend/src/App.tsx</summary>
 
+</details>
+</tool-use>
 
 ---
 
-<tool-use data-tool-type="unknown" data-tool-name="read_file">
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: frontend/src/AppV2.tsx</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: frontend/src/services/api.ts</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: frontend/src/types/api.ts</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="read_lints">
 <details>
-<summary>Tool use: **read_file**</summary>
+          <summary>Tool use: **read_lints** • Read lints for 2 files</summary>
+      
+Lint paths:
 
-Status: **loading**
+- `frontend/src/components/layout/Header.tsx`
+- `frontend/src/components/PlaygroundWelcome.tsx`
+
+Lint results
 
 
+**No lint errors found**
 </details>
 </tool-use>
 
@@ -6145,32 +6314,54 @@ Status: **loading**
 ---
 
 
-
----
-
+Fixing the Header.tsx styling so "API" uses a different color:
 
 
 ---
 
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: frontend/src/components/layout/Header.tsx</summary>
 
-
----
-
-
-
----
-
-
+</details>
+</tool-use>
 
 ---
 
-<tool-use data-tool-type="unknown" data-tool-name="read_file">
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **code_edit** • Edit file: frontend/src/components/layout/Header.tsx</summary>
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -34,5 +34,5 @@
+          }}
+        &gt;
+-         Guardian&lt;span style={{ color: &#39;var(--neon-primary)&#39; }}&gt;API&lt;/span&gt; Playground
++         Guardian&lt;span style={{ color: &#39;var(--neon-tertiary)&#39; }}&gt;API&lt;/span&gt; Playground
+        &lt;/h1&gt;
+        &lt;div
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="read_lints">
 <details>
-<summary>Tool use: **read_file**</summary>
+          <summary>Tool use: **read_lints** • Read lints for 1 file</summary>
+      
+Lint paths:
 
-Status: **loading**
+- `frontend/src/components/layout/Header.tsx`
+
+Lint results
 
 
+**No lint errors found**
 </details>
 </tool-use>
 
@@ -6181,32 +6372,72 @@ Status: **loading**
 ---
 
 
+Updated all instances of "GuardianAPI" to match the terminal mode styling, where "API" is a different color from "Guardian".
+
+## Changes Made:
+
+1. **Header Component** (`frontend/src/components/layout/Header.tsx`)
+   - Changed from: `GuardianAPI Playground`
+   - Changed to: `Guardian<span style={{ color: 'var(--neon-tertiary)' }}>API</span> Playground`
+   - "Guardian" uses `var(--neon-primary)` (cyan)
+   - "API" uses `var(--neon-tertiary)` (green)
+
+2. **PlaygroundWelcome Component** (`frontend/src/components/PlaygroundWelcome.tsx`)
+   - Updated the title: `Guardian<span style={{ color: 'var(--neon-tertiary)' }}>API</span> Playground`
+   - Updated the description text: `Guardian<span style={{ color: 'var(--neon-tertiary)' }}>API</span> combines...`
+
+The styling now matches the terminal mode pattern:
+- **Terminal Mode**: `GUARDIAN` (default text) + `API` (orange/`var(--ci-primary)`)
+- **Playground Mode**: `Guardian` (cyan/`var(--neon-primary)`) + `API` (green/`var(--neon-tertiary)`)
+
+Both modes now highlight "API" in a different color from "Guardian" for visual consistency.
+
+---
+
+_**User (2025-12-03 01:51Z)**_
+
+push everything to this repo https://github.com/Ksmith18skc/GuardianAPI.git 
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
 
 ---
 
 
-
----
-
+Checking git status, then pushing to the repository.
 
 
 ---
 
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **command** • Run command: git status</summary>
 
+```bash
+git status
+```
+
+```
+PS C:\Users\socce\cs\GuardianAPI&gt; git status
+fatal: not a git repository (or any of the parent directories): .git
+```
+</details>
+</tool-use>
 
 ---
 
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **command** • Run command: git remote -v</summary>
 
+```bash
+git remote -v
+```
 
----
-
-<tool-use data-tool-type="unknown" data-tool-name="read_file">
-<details>
-<summary>Tool use: **read_file**</summary>
-
-Status: **loading**
-
-
+```
+fatal: not a git repository (or any of the parent directories): .git
+```
 </details>
 </tool-use>
 
@@ -6217,6 +6448,42 @@ Status: **loading**
 ---
 
 
+Initializing the repository, then pushing to GitHub:
+
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **command** • Run command: git init</summary>
+
+```bash
+git init
+```
+
+```
+Initialized empty Git repository in C:/Users/socce/cs/GuardianAPI/.git/
+```
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: .gitignore</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **command** • Run command: git remote add origin https://github.com/Ksmith18skc/GuardianAPI.git</summary>
+
+```bash
+git remote add origin https://github.com/Ksmith18skc/GuardianAPI.git
+```
+</details>
+</tool-use>
 
 ---
 
@@ -6225,6 +6492,354 @@ Status: **loading**
 ---
 
 
+Staging all files, then committing and pushing:
+
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **command** • Run command: git add .</summary>
+
+```bash
+git add .
+```
+
+```
+PS C:\Users\socce\cs\GuardianAPI&gt; git add .
+warning: in the working copy of &#39;backend/.gitignore&#39;, LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of &#39;backend/Day1.md&#39;, LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of &#39;data/.gitattributes&#39;, LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of &#39;frontend/.gitignore&#39;, LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of &#39;frontend/README.md&#39;, LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of &#39;frontend/eslint.config.js&#39;, LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of &#39;frontend/index.html&#39;, LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of &#39;frontend/src/App.css&#39;, LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of &#39;frontend/src/App.tsx&#39;, LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of &#39;frontend/src/index.css&#39;, LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of &#39;frontend/src/main.tsx&#39;, LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of &#39;frontend/vite.config.ts&#39;, LF will be replaced by CRLF the next time Git touches it
+PS C:\Users\socce\cs\GuardianAPI&gt; 
+```
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **command** • Run command: git status --short</summary>
+
+```bash
+git status --short
+```
+
+```
+PS C:\Users\socce\cs\GuardianAPI&gt; git status --short
+A  .cursorindexingignore
+A  .gitignore
+A  .specstory/.gitignore
+A  .specstory/history/2025-12-02_06-05Z-designing-the-guardian-api-moderation-system.md
+A  .specstory/history/2025-12-03_01-51Z-launch-backend-and-start-frontend.md
+A  &quot;380 Project Preliminary Report.pdf&quot;
+A  CLAUDE.md
+A  &quot;Guardian API - Commercial-Ready Moderation Service.pdf&quot;
+A  PROJECT_STATUS.md
+A  README.md
+A  backend/.gitignore
+A  backend/Day1.md
+A  backend/README.md
+A  backend/START_BACKEND.md
+A  backend/app/__init__.py
+A  backend/app/config.py
+A  backend/app/core/__init__.py
+A  backend/app/core/ensemble.py
+A  backend/app/core/preprocessing.py
+A  backend/app/core/rate_limit.py
+A  backend/app/main.py
+A  backend/app/models/__init__.py
+A  backend/app/models/rule_engine.py
+A  backend/app/models/sexism_classifier.py
+A  backend/app/models/toxicity_model.py
+A  backend/app/routers/__init__.py
+A  backend/app/routers/health.py
+A  backend/app/routers/moderate.py
+A  backend/app/schemas/__init__.py
+A  backend/app/schemas/request.py
+A  backend/app/schemas/response.py
+A  backend/pytest.ini
+A  backend/requirements.txt
+A  backend/start_server.bat
+A  backend/tests/README.md
+A  backend/tests/__init__.py
+A  backend/tests/conftest.py
+A  backend/tests/test_api_endpoints.py
+A  backend/tests/test_ensemble.py
+A  backend/tests/test_integration.py
+A  backend/tests/test_models.py
+A  backend/tests/test_preprocessing.py
+A  data/.gitattributes
+A  frontend/.gitignore
+A  frontend/CONNECTIVITY_FIXES.md
+A  frontend/README.md
+A  frontend/eslint.config.js
+A  frontend/index.html
+A  frontend/public/vite.svg
+A  frontend/src/App.css
+A  frontend/src/App.tsx
+A  frontend/src/AppV2.tsx
+A  frontend/src/assets/react.svg
+A  frontend/src/components/AdvancedPanel.tsx
+A  frontend/src/components/PlaygroundWelcome.tsx
+A  frontend/src/components/UIModeRoot.tsx
+A  frontend/src/components/input/AnalyzeButton.tsx
+A  frontend/src/components/input/ScanningBeam.tsx
+A  frontend/src/components/input/TextInput.tsx
+A  frontend/src/components/layout/BackgroundEffects.tsx
+A  frontend/src/components/layout/Header.tsx
+A  frontend/src/components/layout/MainLayout.tsx
+A  frontend/src/components/results/CodeExamples.tsx
+A  frontend/src/components/results/EnsemblePanel.tsx
+A  frontend/src/components/results/JSONViewer.tsx
+A  frontend/src/components/results/ModelBreakdown.tsx
+A  frontend/src/components/results/PrimaryIssueLabel.tsx
+A  frontend/src/components/results/RuleFlag.tsx
+A  frontend/src/components/results/RulesGrid.tsx
+A  frontend/src/components/results/ScoreGauge.tsx
+A  frontend/src/components/results/SeverityBadge.tsx
+A  frontend/src/components/results/SexismBar.tsx
+A  frontend/src/components/results/ToxicityBar.tsx
+A  frontend/src/components/results/ToxicityBreakdown.tsx
+A  frontend/src/components/ui/APIStatusIndicator.tsx
+A  frontend/src/components/ui/Collapsible.tsx
+A  frontend/src/components/ui/ThemeToggle.tsx
+A  frontend/src/components/ui/UIModeToggle.tsx
+A  frontend/src/components/ui/UIModeToggleV2.tsx
+A  frontend/src/contexts/UIModeContext.tsx
+A  frontend/src/hooks/useAPIStatus.ts
+A  frontend/src/hooks/useModeration.ts
+A  frontend/src/hooks/useTheme.ts
+A  frontend/src/index.css
+A  frontend/src/main.tsx
+A  frontend/src/services/api.ts
+A  frontend/src/styles/animations.css
+A  frontend/src/styles/globals.css
+A  frontend/src/styles/theme-new.css
+A  frontend/src/styles/themes.css
+A  frontend/src/types/api.ts
+A  frontend/src/utils/codeGenerators.ts
+A  frontend/src/utils/formatters.ts
+A  frontend/vite.config.ts
+A  guardian_api_diagram.png
+A  scripts/train_and_save_sexism_model.py
+A  scripts/verify_sexism_threshold.py
+A  sdks/README.md
+A  sdks/javascript/.gitignore
+A  sdks/javascript/README.md
+A  sdks/javascript/examples/basic-usage.js
+A  sdks/javascript/examples/basic-usage.ts
+A  sdks/javascript/src/client.ts
+A  sdks/javascript/src/exceptions.ts
+A  sdks/javascript/src/index.ts
+A  sdks/javascript/src/types.ts
+A  sdks/python/.gitignore
+A  sdks/python/README.md
+A  sdks/python/examples/__init__.py
+A  sdks/python/examples/advanced_usage.py
+A  sdks/python/examples/basic_usage.py
+A  sdks/python/guardian_api/__init__.py
+A  sdks/python/guardian_api/client.py
+A  sdks/python/guardian_api/exceptions.py
+A  sdks/python/setup.py
+```
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **command** • Run command: git commit -m "Initial commit: GuardianAPI - Multi-model AI moderation engine with full-stack implementation"</summary>
+
+```bash
+git commit -m "Initial commit: GuardianAPI - Multi-model AI moderation engine with full-stack implementation"
+```
+
+```
+PS C:\Users\socce\cs\GuardianAPI&gt; git commit -m &quot;Initial commit: GuardianAPI - Multi-model AI moderation engine with full-stack implementation&quot;                                                                                                                                   
+[master (root-commit) b075c68] Initial commit: GuardianAPI - Multi-model AI moderation engine with full-stack implementation
+ 115 files changed, 60592 insertions(+)
+ create mode 100644 .cursorindexingignore
+ create mode 100644 .gitignore
+ create mode 100644 .specstory/.gitignore
+ create mode 100644 .specstory/history/2025-12-02_06-05Z-designing-the-guardian-api-moderation-system.md
+ create mode 100644 .specstory/history/2025-12-03_01-51Z-launch-backend-and-start-frontend.md
+ create mode 100644 380 Project Preliminary Report.pdf
+ create mode 100644 CLAUDE.md
+ create mode 100644 Guardian API - Commercial-Ready Moderation Service.pdf
+ create mode 100644 PROJECT_STATUS.md
+ create mode 100644 README.md
+ create mode 100644 backend/.gitignore
+ create mode 100644 backend/Day1.md
+ create mode 100644 backend/README.md
+ create mode 100644 backend/START_BACKEND.md
+ create mode 100644 backend/app/__init__.py
+ create mode 100644 backend/app/config.py
+ create mode 100644 backend/app/core/__init__.py
+ create mode 100644 backend/app/core/ensemble.py
+ create mode 100644 backend/app/core/preprocessing.py
+ create mode 100644 backend/app/core/rate_limit.py
+ create mode 100644 backend/app/main.py
+ create mode 100644 backend/app/models/__init__.py
+ create mode 100644 backend/app/models/rule_engine.py
+ create mode 100644 backend/app/models/sexism_classifier.py
+ create mode 100644 backend/app/models/toxicity_model.py
+ create mode 100644 backend/app/routers/__init__.py
+ create mode 100644 backend/app/routers/health.py
+ create mode 100644 backend/app/routers/moderate.py
+ create mode 100644 backend/app/schemas/__init__.py
+ create mode 100644 backend/app/schemas/request.py
+ create mode 100644 backend/app/schemas/response.py
+ create mode 100644 backend/pytest.ini
+ create mode 100644 backend/requirements.txt
+ create mode 100644 backend/start_server.bat
+ create mode 100644 backend/tests/README.md
+ create mode 100644 backend/tests/__init__.py
+ create mode 100644 backend/tests/conftest.py
+ create mode 100644 backend/tests/test_api_endpoints.py
+ create mode 100644 backend/tests/test_ensemble.py
+ create mode 100644 backend/tests/test_integration.py
+ create mode 100644 backend/tests/test_models.py
+ create mode 100644 backend/tests/test_preprocessing.py
+ create mode 100644 data/.gitattributes
+ create mode 100644 frontend/.gitignore
+ create mode 100644 frontend/CONNECTIVITY_FIXES.md
+ create mode 100644 frontend/README.md
+ create mode 100644 frontend/eslint.config.js
+ create mode 100644 frontend/index.html
+ create mode 100644 frontend/public/vite.svg
+ create mode 100644 frontend/src/App.css
+ create mode 100644 frontend/src/App.tsx
+ create mode 100644 frontend/src/AppV2.tsx
+ create mode 100644 frontend/src/assets/react.svg
+ create mode 100644 frontend/src/components/AdvancedPanel.tsx
+ create mode 100644 frontend/src/components/PlaygroundWelcome.tsx
+ create mode 100644 frontend/src/components/UIModeRoot.tsx
+ create mode 100644 frontend/src/components/input/AnalyzeButton.tsx
+ create mode 100644 frontend/src/components/input/ScanningBeam.tsx
+ create mode 100644 frontend/src/components/input/TextInput.tsx
+ create mode 100644 frontend/src/components/layout/BackgroundEffects.tsx
+ create mode 100644 frontend/src/components/layout/Header.tsx
+ create mode 100644 frontend/src/components/layout/MainLayout.tsx
+ create mode 100644 frontend/src/components/results/CodeExamples.tsx
+ create mode 100644 frontend/src/components/results/EnsemblePanel.tsx
+ create mode 100644 frontend/src/components/results/JSONViewer.tsx
+ create mode 100644 frontend/src/components/results/ModelBreakdown.tsx
+ create mode 100644 frontend/src/components/results/PrimaryIssueLabel.tsx
+ create mode 100644 frontend/src/components/results/RuleFlag.tsx
+ create mode 100644 frontend/src/components/results/RulesGrid.tsx
+ create mode 100644 frontend/src/components/results/ScoreGauge.tsx
+ create mode 100644 frontend/src/components/results/SeverityBadge.tsx
+ create mode 100644 frontend/src/components/results/SexismBar.tsx
+ create mode 100644 frontend/src/components/results/ToxicityBar.tsx
+ create mode 100644 frontend/src/components/results/ToxicityBreakdown.tsx
+ create mode 100644 frontend/src/components/ui/APIStatusIndicator.tsx
+ create mode 100644 frontend/src/components/ui/Collapsible.tsx
+ create mode 100644 frontend/src/components/ui/ThemeToggle.tsx
+ create mode 100644 frontend/src/components/ui/UIModeToggle.tsx
+ create mode 100644 frontend/src/components/ui/UIModeToggleV2.tsx
+ create mode 100644 frontend/src/contexts/UIModeContext.tsx
+ create mode 100644 frontend/src/hooks/useAPIStatus.ts
+ create mode 100644 frontend/src/hooks/useModeration.ts
+ create mode 100644 frontend/src/hooks/useTheme.ts
+ create mode 100644 frontend/src/index.css
+ create mode 100644 frontend/src/main.tsx
+ create mode 100644 frontend/src/services/api.ts
+ create mode 100644 frontend/src/styles/animations.css
+ create mode 100644 frontend/src/styles/globals.css
+ create mode 100644 frontend/src/styles/theme-new.css
+ create mode 100644 frontend/src/styles/themes.css
+ create mode 100644 frontend/src/types/api.ts
+ create mode 100644 frontend/src/utils/codeGenerators.ts
+ create mode 100644 frontend/src/utils/formatters.ts
+ create mode 100644 frontend/vite.config.ts
+ create mode 100644 guardian_api_diagram.png
+ create mode 100644 scripts/train_and_save_sexism_model.py
+ create mode 100644 scripts/verify_sexism_threshold.py
+ create mode 100644 sdks/README.md
+ create mode 100644 sdks/javascript/.gitignore
+ create mode 100644 sdks/javascript/README.md
+ create mode 100644 sdks/javascript/examples/basic-usage.js
+ create mode 100644 sdks/javascript/examples/basic-usage.ts
+ create mode 100644 sdks/javascript/src/client.ts
+ create mode 100644 sdks/javascript/src/exceptions.ts
+ create mode 100644 sdks/javascript/src/index.ts
+ create mode 100644 sdks/javascript/src/types.ts
+ create mode 100644 sdks/python/.gitignore
+ create mode 100644 sdks/python/README.md
+ create mode 100644 sdks/python/examples/__init__.py
+ create mode 100644 sdks/python/examples/advanced_usage.py
+ create mode 100644 sdks/python/examples/basic_usage.py
+ create mode 100644 sdks/python/guardian_api/__init__.py
+ create mode 100644 sdks/python/guardian_api/client.py
+ create mode 100644 sdks/python/guardian_api/exceptions.py
+ create mode 100644 sdks/python/setup.py
+```
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **command** • Run command: git branch -M main</summary>
+
+```bash
+git branch -M main
+```
+
+```
+PS C:\Users\socce\cs\GuardianAPI&gt; git branch -M main
+```
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="shell" data-tool-name="run_terminal_cmd">
+<details><summary>Tool use: **command** • Run command: git push -u origin main</summary>
+
+```bash
+git push -u origin main
+```
+
+```
+PS C:\Users\socce\cs\GuardianAPI&gt; git push -u origin main
+Enumerating objects: 150, done.
+Counting objects: 100% (150/150), done.
+Delta compression using up to 12 threads
+Compressing objects: 100% (138/138), done.
+Writing objects: 100% (150/150), 737.55 KiB | 8.48 MiB/s, done.
+Total 150 (delta 5), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (5/5), done.
+To https://github.com/Ksmith18skc/GuardianAPI.git
+ * [new branch]      main -&gt; main
+branch &#39;main&#39; set up to track &#39;origin/main&#39;.
+```
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Pushed all files to the GitHub repository.
+
+## Summary
+
+1. **Initialized Git repository** — Created a new git repository in the project directory
+2. **Added remote** — Connected to `https://github.com/Ksmith18skc/GuardianAPI.git`
+3. **Staged all files** — Added 115 files to git (60,592+ lines of code)
+4. **Created initial commit** — Committed with message: "Initial commit: Gua
 
 ---
 
