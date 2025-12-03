@@ -57,7 +57,7 @@ class ToxicityModel:
                 if torch.cuda.is_available():
                     self.model = AutoModelForSequenceClassification.from_pretrained(
                         model_name,
-                        torch_dtype=torch.float16
+                        dtype=torch.float16  # Use dtype instead of torch_dtype (deprecated)
                     )
                     logger.info("Loaded model with float16 precision for memory efficiency")
                 else:

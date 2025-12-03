@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     PROJECT_ROOT: Path = Path(__file__).parent.parent.parent
     MODELS_DIR: Path = PROJECT_ROOT / "backend" / "app" / "models"
     SEXISM_MODEL_DIR: Path = MODELS_DIR / "sexism"
-    TOXICITY_MODEL_NAME: str = "osanseviero/distilroberta-toxic"  # Smaller model for low-memory hosting (<400MB)
+    TOXICITY_MODEL_NAME: str = "unitary/toxic-bert"  # Smaller BERT-based model for low-memory hosting (<400MB)
     RULES_DIR: Path = MODELS_DIR / "rules"
     
     # Model Configuration
