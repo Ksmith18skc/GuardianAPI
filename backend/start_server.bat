@@ -1,0 +1,9 @@
+@echo off
+echo Starting GuardianAPI Backend Server...
+echo.
+echo Server will be available at: http://127.0.0.1:8000
+echo API Documentation: http://127.0.0.1:8000/docs
+echo.
+py -3.11 -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+pause
+

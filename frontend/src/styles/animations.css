@@ -1,0 +1,136 @@
+/**
+ * Animation definitions for cybernetic scanner aesthetic
+ */
+
+/* Scanning beam animation */
+@keyframes scan-beam {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* Scanning lines background */
+@keyframes scan-lines {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100vh);
+  }
+}
+
+/* Pulse glow effect */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 10px var(--neon-primary);
+    opacity: 1;
+  }
+  50% {
+    box-shadow: 0 0 25px var(--neon-primary), 0 0 40px var(--neon-primary);
+    opacity: 0.8;
+  }
+}
+
+/* Fade in with slide up */
+@keyframes fade-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Stagger delay utility classes */
+.stagger-1 {
+  animation-delay: 0ms;
+}
+
+.stagger-2 {
+  animation-delay: 100ms;
+}
+
+.stagger-3 {
+  animation-delay: 200ms;
+}
+
+.stagger-4 {
+  animation-delay: 300ms;
+}
+
+.stagger-5 {
+  animation-delay: 400ms;
+}
+
+/* Bar fill animation */
+@keyframes bar-fill {
+  from {
+    width: 0;
+  }
+}
+
+.bar-fill {
+  animation: bar-fill 0.8s ease-out forwards;
+}
+
+/* Gauge fill animation */
+@keyframes gauge-fill {
+  from {
+    stroke-dashoffset: 100;
+  }
+}
+
+.gauge-fill {
+  animation: gauge-fill 1s ease-out forwards;
+}
+
+/* Glitch effect */
+@keyframes glitch {
+  0%, 100% {
+    transform: translate(0);
+  }
+  20% {
+    transform: translate(-2px, 2px);
+  }
+  40% {
+    transform: translate(-2px, -2px);
+  }
+  60% {
+    transform: translate(2px, 2px);
+  }
+  80% {
+    transform: translate(2px, -2px);
+  }
+}
+
+/* Shimmer effect for loading */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--bg-surface) 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    var(--bg-surface) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+}
+

@@ -1,0 +1,59 @@
+/**
+ * Main entry point for styles
+ */
+
+@import './styles/globals.css';
+
+/* Import highlight.js theme */
+@import 'highlight.js/styles/github-dark.css';
+
+/* Responsive grid adjustments */
+@media (max-width: 1024px) {
+  .responsive-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Tablet adjustments */
+@media (max-width: 768px) {
+  .responsive-grid {
+    gap: var(--spacing-lg) !important;
+  }
+}
+
+/* Mobile adjustments */
+@media (max-width: 640px) {
+  .container {
+    padding: 0 var(--spacing-md);
+  }
+  
+  .panel {
+    padding: var(--spacing-md);
+  }
+  
+  h1 {
+    font-size: 1.25rem !important;
+  }
+  
+  h2, h3 {
+    font-size: 1rem !important;
+  }
+  
+  /* Stack header items on mobile */
+  header {
+    flex-direction: column;
+    gap: var(--spacing-sm) !important;
+    padding: var(--spacing-sm) var(--spacing-md) !important;
+  }
+  
+  /* Full width buttons on mobile */
+  .btn {
+    width: 100%;
+  }
+  
+  /* Adjust gauge size on mobile */
+  svg[width="120"] {
+    width: 100px;
+    height: 100px;
+  }
+}

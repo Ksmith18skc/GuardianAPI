@@ -1,0 +1,12 @@
+*.pyc
+__pycache__/
+*.egg-info/
+dist/
+build/
+*.egg
+.env
+.venv
+venv/
+*.json
+moderation_result.json
+

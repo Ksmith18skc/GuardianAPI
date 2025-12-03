@@ -1,0 +1,4 @@
+﻿# Git ignore for backend-specific artifacts
+.env
+.env.*
+*.log
