@@ -4,6 +4,7 @@ Configuration settings for Guardian API
 import os
 from pathlib import Path
 from typing import Optional
+from pydantic import field_validator
 from pydantic_settings import BaseSettings
 
 
@@ -49,13 +50,30 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
     
     # CORS
+    # Parse CORS_ORIGINS from environment variable or use defaults
     CORS_ORIGINS: list = [
+        "https://guardian.korymsmith.dev",
         "http://localhost:5173",
         "http://127.0.0.1:5173",
         "http://localhost:3000",
         "http://127.0.0.1:3000",
-        "*"  # Allow all in development, restrict in production
     ]
+    
+    @field_validator('CORS_ORIGINS', mode='before')
+    @classmethod
+    def parse_cors_origins(cls, v):
+        """Parse CORS_ORIGINS from environment variable (comma-separated string)"""
+        if isinstance(v, str):
+            # Handle comma-separated string from environment variable
+            return [origin.strip() for origin in v.split(",") if origin.strip()]
+        # If it's already a list, return as-is
+        return v if v else [
+            "https://guardian.korymsmith.dev",
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+        ]
     
     class Config:
         env_file = ".env"
