@@ -1,0 +1,326 @@
+---
+title: "Ensemble Logic"
+description: "How Guardian API combines multiple models"
+---
+
+## Overview
+
+The ensemble layer is the "brain" of Guardian API, intelligently combining outputs from three independent models into a single, actionable moderation decision.
+
+## Ensemble Algorithm
+
+### Step 1: Weighted Score Fusion
+
+The ensemble uses a **weighted average** of model scores:
+
+```python
+ensemble_score = (
+    0.35 × sexism_score +      # Model 1: Sexism classifier
+    0.35 × toxicity_score +    # Model 2: Toxicity transformer
+    0.30 × rule_score          # Model 3: Rule engine
+)
+```
+
+<AccordionGroup>
+  <Accordion title="Weight Rationale">
+    **Why 35-35-30?**
+
+    - **Sexism (35%)**: Custom-trained, high accuracy on target domain
+    - **Toxicity (35%)**: State-of-the-art transformer, broad coverage
+    - **Rules (30%)**: High precision but limited recall, perfect for critical issues
+
+    These weights were chosen through empirical testing to balance precision and recall across different content types.
+  </Accordion>
+
+  <Accordion title="Rule Score Calculation">
+    The rule score is computed based on detected flags:
+
+    | Flag Detected | Rule Score |
+    |---------------|------------|
+    | Self-harm | 0.95 (highest) |
+    | Slur | 0.90 |
+    | Threat | 0.85 |
+    | Profanity | 0.40 |
+    | None | 0.00 |
+
+    If multiple flags are detected, the **maximum** score is used.
+
+    Additionally, if **any** critical rule (slur, self-harm, threat) is detected, the rule score is set to at least 0.70.
+  </Accordion>
+</AccordionGroup>
+
+### Step 2: Conflict Resolution
+
+Rule-based detections can **override** the weighted average for critical issues:
+
+<Steps>
+  <Step title="Slur or Self-Harm Detected">
+    If slurs or self-harm phrases are detected:
+    ```python
+    final_score = max(ensemble_score, 0.8)
+    ```
+    Ensures high-risk content is never underestimated.
+  </Step>
+
+  <Step title="Threat Detected">
+    If threat patterns are detected:
+    ```python
+    final_score = max(ensemble_score, 0.7)
+    ```
+    Elevates score even if ML models missed it.
+  </Step>
+
+  <Step title="No Critical Flags">
+    Use the weighted average as-is:
+    ```python
+    final_score = ensemble_score
+    ```
+  </Step>
+</Steps>
+
+<Info>
+  **Why Override?**
+
+  Rule-based detection has high precision (low false positives) for critical issues. When rules detect slurs, threats, or self-harm, we trust them even if ML models disagree.
+</Info>
+
+### Step 3: Primary Issue Identification
+
+The ensemble identifies the **main concern** based on individual model scores:
+
+<CodeGroup>
+```python Logic
+if final_score >= 0.7:
+    if sexism_score >= 0.6:
+        primary_issue = "sexism"
+    elif toxicity_score >= 0.6:
+        primary_issue = "toxicity"
+    elif rule_penalties:
+        primary_issue = rule_penalties[0]  # e.g., "slur", "threat", "self_harm"
+    else:
+        primary_issue = "harmful_content"
+else:
+    primary_issue = "none"
+```
+</CodeGroup>
+
+This helps users understand **why** content was flagged.
+
+### Step 4: Summary Classification
+
+The final score is mapped to a human-readable summary:
+
+| Score Range | Summary | Meaning |
+|-------------|---------|---------|
+| 0.6 - 1.0 | `highly_harmful` | Strong evidence of harmful content |
+| 0.3 - 0.6 | `likely_harmful` | Probable harmful content |
+| 0.1 - 0.3 | `potentially_harmful` | Some harmful indicators |
+| 0.0 - 0.1 | `likely_safe` | No significant harmful content |
+
+### Step 5: Severity Calculation
+
+Severity is computed from the final score:
+
+```python
+if score >= 0.6:
+    severity = "high"
+elif score >= 0.3:
+    severity = "moderate"
+else:
+    severity = "low"
+```
+
+## Example Scenarios
+
+<Tabs>
+  <Tab title="Agreement (Safe)">
+    **Text**: "I love this product!"
+
+    **Model Outputs**:
+    - Sexism: 0.05
+    - Toxicity: 0.02
+    - Rules: 0.00 (no flags)
+
+    **Ensemble Calculation**:
+    ```
+    base_score = 0.35 × 0.05 + 0.35 × 0.02 + 0.30 × 0.00
+               = 0.0245
+
+    final_score = 0.0245  (no overrides)
+    ```
+
+    **Result**:
+    ```json
+    {
+      "summary": "likely_safe",
+      "primary_issue": "none",
+      "score": 0.025,
+      "severity": "low"
+    }
+    ```
+  </Tab>
+
+  <Tab title="Agreement (Harmful)">
+    **Text**: "Women belong in the kitchen"
+
+    **Model Outputs**:
+    - Sexism: 0.85
+    - Toxicity: 0.62
+    - Rules: 0.00 (no explicit flags)
+
+    **Ensemble Calculation**:
+    ```
+    base_score = 0.35 × 0.85 + 0.35 × 0.62 + 0.30 × 0.00
+               = 0.5145
+
+    final_score = 0.5145  (no overrides)
+    ```
+
+    **Result**:
+    ```json
+    {
+      "summary": "likely_harmful",
+      "primary_issue": "sexism",
+      "score": 0.515,
+      "severity": "moderate"
+    }
+    ```
+  </Tab>
+
+  <Tab title="Conflict (Rule Override)">
+    **Text**: "You should kill yourself"
+
+    **Model Outputs**:
+    - Sexism: 0.15
+    - Toxicity: 0.45
+    - Rules: 0.95 (self_harm_flag = true)
+
+    **Ensemble Calculation**:
+    ```
+    base_score = 0.35 × 0.15 + 0.35 × 0.45 + 0.30 × 0.95
+               = 0.495
+
+    # Override due to self_harm detection
+    final_score = max(0.495, 0.8) = 0.8
+    ```
+
+    **Result**:
+    ```json
+    {
+      "summary": "highly_harmful",
+      "primary_issue": "self_harm",
+      "score": 0.800,
+      "severity": "high"
+    }
+    ```
+
+    <Info>
+      Even though ML models gave moderate scores, the rule engine's high-confidence detection overrides to ensure critical content is caught.
+    </Info>
+  </Tab>
+
+  <Tab title="Disagreement">
+    **Text**: "This is absolutely garbage"
+
+    **Model Outputs**:
+    - Sexism: 0.20
+    - Toxicity: 0.68
+    - Rules: 0.40 (profanity_flag = true)
+
+    **Ensemble Calculation**:
+    ```
+    base_score = 0.35 × 0.20 + 0.35 × 0.68 + 0.30 × 0.40
+               = 0.428
+
+    final_score = 0.428  (profanity doesn't trigger override)
+    ```
+
+    **Result**:
+    ```json
+    {
+      "summary": "likely_harmful",
+      "primary_issue": "toxicity",
+      "score": 0.428,
+      "severity": "moderate"
+    }
+    ```
+
+    **Interpretation**: Profanity detected, but context suggests frustration rather than targeted harm. Moderate severity is appropriate.
+  </Tab>
+</Tabs>
+
+## Design Principles
+
+### 1. Conservative for Critical Issues
+
+<Card title="Fail-Safe Approach" icon="shield">
+When in doubt about threats, slurs, or self-harm, err on the side of caution. Better to flag for human review than miss dangerous content.
+</Card>
+
+### 2. Balanced for Common Cases
+
+<Card title="Nuanced Scoring" icon="balance-scale">
+For typical moderation cases (toxicity, rudeness), use weighted fusion to capture nuance. Not everything needs maximum severity.
+</Card>
+
+### 3. Explainable Decisions
+
+<Card title="Primary Issue" icon="lightbulb">
+Always identify the main reason for flagging. Users need to understand **why** content was moderated.
+</Card>
+
+### 4. Configurable Weights
+
+<Card title="Tunable System" icon="sliders">
+Weights can be adjusted based on use case. Social media might weight toxicity higher; professional forums might weight profanity lower.
+</Card>
+
+## Tuning the Ensemble
+
+### Adjusting Weights
+
+Modify weights in `backend/app/core/ensemble.py`:
+
+```python
+# Example: Prioritize sexism detection
+WEIGHT_SEXISM = 0.45  # Increased from 0.35
+WEIGHT_TOXICITY = 0.30  # Decreased from 0.35
+WEIGHT_RULES = 0.25  # Decreased from 0.30
+```
+
+### Adjusting Override Thresholds
+
+Modify conflict resolution thresholds:
+
+```python
+# Example: More aggressive overrides
+if rule_flags.get("slur_detected") or rule_flags.get("self_harm_flag"):
+    final_score = max(base_score, 0.9)  # Increased from 0.8
+```
+
+### Adjusting Severity Boundaries
+
+Modify thresholds in `backend/app/config.py`:
+
+```python
+# Example: Stricter high severity
+SEVERITY_HIGH = 0.7  # Increased from 0.6
+SEVERITY_MODERATE = 0.4  # Increased from 0.3
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Response Structure" icon="code" href="/concepts/response-structure">
+    Understand the full API response format
+  </Card>
+  <Card title="Models" icon="brain" href="/concepts/models">
+    Learn about individual models
+  </Card>
+  <Card title="Configuration" icon="gear" href="/configuration/environment">
+    Configure ensemble settings
+  </Card>
+  <Card title="API Reference" icon="book" href="/api-reference/moderate-text">
+    Try the moderation endpoint
+  </Card>
+</CardGroup>

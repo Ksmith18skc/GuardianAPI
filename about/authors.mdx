@@ -1,0 +1,157 @@
+---
+title: "Author"
+description: "About Guardian API and its creator"
+---
+
+## Creator
+
+<Card title="Kory Smith" icon="user">
+  **Role**: Creator & Lead Developer
+
+  **Contributions**:
+  - Full-stack development
+  - Machine learning implementation
+  - API architecture & design
+  - SDKs (Python & JavaScript)
+  - Documentation & deployment
+</Card>
+
+## Project Background
+
+Guardian API evolved from an academic machine learning project focused on detecting sexism in social media text. What started as a binary classification problem for a CSC 380 class project has grown into a comprehensive, production-ready content moderation system.
+
+### Academic Foundation (Fall 2025)
+
+**Course**: CSC 380 - Machine Learning
+**Institution**: University of Arizona
+**Original Goal**: Build a sexism classifier using LASSO regression
+
+**Initial Scope**:
+- Train binary classifier on ~40,000 labeled tweets
+- Achieve >80% F1 score
+- Demonstrate practical ML engineering
+
+### Evolution to Production
+
+After successfully completing the academic requirements, I chose to expand the project into a full-fledged API service:
+
+**Phase 1**: Multi-Model Architecture
+- Added toxicity transformer model
+- Integrated rule-based heuristics
+- Designed ensemble aggregation system
+
+**Phase 2**: Production Infrastructure
+- Built FastAPI backend
+- Implemented rate limiting and caching
+- Added comprehensive error handling and logging
+
+**Phase 3**: Developer Experience
+- Created Python and JavaScript SDKs
+- Generated comprehensive documentation
+- Set up interactive API playground
+
+**Phase 4**: Advanced Features
+- GPU acceleration support
+- Batch processing capabilities
+- Custom deployment options
+
+## Philosophy
+
+Guardian API is built on several core principles:
+
+<AccordionGroup>
+  <Accordion title="Transparency" icon="eye">
+    **Open Source & Explainable**
+
+    - Full source code available on GitHub
+    - Clear model explanations
+    - Documented decision-making process
+    - No black-box algorithms
+  </Accordion>
+
+  <Accordion title="Accuracy" icon="bullseye">
+    **Multi-Model Validation**
+
+    - Never rely on a single model
+    - Ensemble voting reduces false positives
+    - Continuous evaluation and improvement
+    - Academic rigor meets production standards
+  </Accordion>
+
+  <Accordion title="Flexibility" icon="sliders">
+    **Configurable & Extensible**
+
+    - Adjustable thresholds
+    - Custom rule sets
+    - Pluggable model architecture
+    - Self-hosted or cloud options
+  </Accordion>
+
+  <Accordion title="Developer-First" icon="code">
+    **Built for Engineers**
+
+    - Clean REST API
+    - Type-safe SDKs
+    - Comprehensive documentation
+    - Interactive examples
+  </Accordion>
+</AccordionGroup>
+
+## Technology Stack
+
+Guardian API leverages modern tools and frameworks:
+
+### Backend
+- **FastAPI**: High-performance async Python web framework
+- **PyTorch**: Deep learning framework for transformer models
+- **Scikit-learn**: Machine learning for LASSO classifier
+- **Pydantic**: Data validation and settings management
+
+### Models
+- **Custom LASSO**: Binary sexism classifier
+- **HuggingFace Transformers**: Pre-trained toxicity detection
+- **NLTK**: Natural language preprocessing
+- **Custom Rules**: Regex-based pattern matching
+
+### Infrastructure
+- **Uvicorn**: ASGI server
+- **Redis/Upstash**: Rate limiting and caching
+- **Docker**: Containerization
+- **GitHub Actions**: CI/CD (planned)
+
+### SDKs
+- **Python**: Type hints, async support
+- **TypeScript**: Full type definitions
+- **Requests/Fetch**: HTTP clients
+
+## Recognition
+
+<Info>
+  **Academic Excellence**: Guardian API received high marks in CSC 380 for demonstrating production-grade ML engineering, going well beyond the standard academic project scope.
+</Info>
+
+<Note>
+  **Open Source**: The project is fully open source and welcomes contributions from the community. See our [GitHub repository](https://github.com/Ksmith18skc/GuardianAPI) for contribution guidelines.
+</Note>
+
+## Contact
+
+- **GitHub**: [github.com/Ksmith18skc/GuardianAPI](https://github.com/Ksmith18skc/GuardianAPI)
+- **Issues**: Report bugs or request features on GitHub Issues
+- **Discussions**: Join conversations in GitHub Discussions
+
+## Acknowledgments
+
+Special thanks to:
+
+- **University of Arizona** - For providing the academic environment and resources
+- **CSC 380 Course Staff** - For guidance on ML best practices
+- **HuggingFace** - For pre-trained transformer models
+- **FastAPI Community** - For excellent web framework
+- **Open Source Community** - For the tools that made this possible
+
+---
+
+<Card title="Want to Contribute?" icon="heart" href="https://github.com/Ksmith18skc/GuardianAPI">
+  Guardian API is open source and welcomes contributions. Whether it's code, documentation, or ideas, contributions are appreciated.
+</Card>

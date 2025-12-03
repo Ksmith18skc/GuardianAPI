@@ -1,0 +1,8 @@
+<svg width="120" height="40" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Shield icon -->
+  <path d="M20 5L12 8V15C12 20.5 15 25.5 20 28C25 25.5 28 20.5 28 15V8L20 5Z" fill="#1956E3" stroke="#36D1DC" stroke-width="1.5" stroke-linejoin="round"/>
+  <path d="M18 16L19.5 17.5L22 14" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Guardian text -->
+  <text x="35" y="25" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#E2E8F0">Guardian</text>
+</svg>

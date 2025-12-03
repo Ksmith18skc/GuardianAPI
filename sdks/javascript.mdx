@@ -1,0 +1,220 @@
+---
+title: "JavaScript/TypeScript SDK"
+description: "JavaScript and TypeScript client library for Guardian API"
+---
+
+## Installation
+
+```bash
+cd sdks/javascript
+npm install
+npm run build
+```
+
+Or install from the repository:
+```bash
+npm install github:Ksmith18skc/GuardianAPI/sdks/javascript
+```
+
+## Quick Start
+
+<Tabs>
+  <Tab title="TypeScript">
+    ```typescript
+    import { GuardianClient } from 'guardian-api-sdk';
+
+    // Initialize client
+    const client = new GuardianClient({
+      baseUrl: 'http://localhost:8000'
+    });
+
+    // Moderate single text
+    const result = await client.moderateText('Your text to moderate');
+    console.log(result);
+
+    // Moderate batch
+    const texts = ['Text 1', 'Text 2', 'Text 3'];
+    const batchResults = await client.moderateBatch(texts);
+    console.log(batchResults);
+    ```
+  </Tab>
+
+  <Tab title="JavaScript">
+    ```javascript
+    const { GuardianClient } = require('guardian-api-sdk');
+
+    // Initialize client
+    const client = new GuardianClient({
+      baseUrl: 'http://localhost:8000'
+    });
+
+    // Moderate single text
+    const result = await client.moderateText('Your text to moderate');
+    console.log(result);
+
+    // Moderate batch
+    const texts = ['Text 1', 'Text 2', 'Text 3'];
+    const batchResults = await client.moderateBatch(texts);
+    console.log(batchResults);
+    ```
+  </Tab>
+</Tabs>
+
+## API Reference
+
+### GuardianClient
+
+```typescript
+class GuardianClient {
+  constructor(options: GuardianClientOptions);
+  moderateText(text: string): Promise<ModerationResponse>;
+  moderateBatch(texts: string[]): Promise<BatchModerationResponse>;
+}
+```
+
+### Types
+
+```typescript
+interface GuardianClientOptions {
+  baseUrl: string;
+  timeout?: number;  // milliseconds
+}
+
+interface ModerationResponse {
+  text: string;
+  label: {
+    sexism: SexismLabel;
+    toxicity: ToxicityLabel;
+    rules: RulesLabel;
+  };
+  ensemble: EnsembleLabel;
+  meta: MetaData;
+}
+```
+
+## Examples
+
+### Basic Usage
+
+```typescript
+import { GuardianClient } from 'guardian-api-sdk';
+
+const client = new GuardianClient({
+  baseUrl: 'http://localhost:8000'
+});
+
+// Moderate text
+const result = await client.moderateText('Women belong in the kitchen');
+
+// Access results
+console.log(`Summary: ${result.ensemble.summary}`);
+console.log(`Score: ${result.ensemble.score}`);
+console.log(`Primary Issue: ${result.ensemble.primary_issue}`);
+```
+
+### Batch Processing
+
+```typescript
+const texts = [
+  'I love this product!',
+  'This is terrible',
+  'Women belong in the kitchen'
+];
+
+const batchResults = await client.moderateBatch(texts);
+
+console.log(`Processed: ${batchResults.total_processed} texts`);
+console.log(`Time: ${batchResults.processing_time_ms}ms`);
+
+batchResults.results.forEach(result => {
+  console.log(`\nText: ${result.text}`);
+  console.log(`Summary: ${result.ensemble.summary}`);
+  console.log(`Score: ${result.ensemble.score}`);
+});
+```
+
+### Error Handling
+
+```typescript
+import { GuardianClient, GuardianAPIError } from 'guardian-api-sdk';
+
+const client = new GuardianClient({
+  baseUrl: 'http://localhost:8000'
+});
+
+try {
+  const result = await client.moderateText('Your text');
+  console.log(result);
+} catch (error) {
+  if (error instanceof GuardianAPIError) {
+    console.error(`API Error: ${error.message}`);
+    console.error(`Status: ${error.statusCode}`);
+  } else {
+    console.error(`Unexpected error: ${error}`);
+  }
+}
+```
+
+## Complete Example
+
+```typescript
+import { GuardianClient, ModerationResponse } from 'guardian-api-sdk';
+
+async function main() {
+  const client = new GuardianClient({
+    baseUrl: 'http://localhost:8000',
+    timeout: 30000  // 30 seconds
+  });
+
+  const texts = [
+    'I love this product!',
+    'This is garbage',
+    'Women belong in the kitchen'
+  ];
+
+  try {
+    const batchResults = await client.moderateBatch(texts);
+
+    console.log(`Processed ${batchResults.total_processed} texts`);
+    console.log(`Total time: ${batchResults.processing_time_ms}ms\n`);
+
+    batchResults.results.forEach((result: ModerationResponse) => {
+      const action = determineAction(result);
+
+      console.log(`Text: ${result.text}`);
+      console.log(`  Action: ${action}`);
+      console.log(`  Summary: ${result.ensemble.summary}`);
+      console.log(`  Score: ${result.ensemble.score}`);
+      console.log();
+    });
+
+  } catch (error) {
+    console.error('Error:', error);
+    process.exit(1);
+  }
+}
+
+function determineAction(result: ModerationResponse): string {
+  const { summary, primary_issue } = result.ensemble;
+
+  if (summary === 'highly_harmful') {
+    return 'BLOCK';
+  } else if (summary === 'likely_harmful') {
+    if (['threat', 'self_harm'].includes(primary_issue)) {
+      return 'BLOCK_AND_ALERT';
+    }
+    return 'REVIEW';
+  } else if (summary === 'potentially_harmful') {
+    return 'FLAG';
+  }
+  return 'ALLOW';
+}
+
+main();
+```
+
+## See Also
+
+- [API Reference](/api-reference/moderate-text) - REST API documentation
+- [Python SDK](/sdks/python) - Python SDK
+- [Response Structure](/concepts/response-structure) - Understanding responses

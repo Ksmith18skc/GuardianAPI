@@ -1,0 +1,160 @@
+---
+title: "Environment Variables"
+description: "Configure Guardian API with environment variables"
+---
+
+## Overview
+
+Guardian API can be configured using environment variables in a `.env` file located in the `backend/` directory.
+
+## Configuration File
+
+Create `backend/.env`:
+
+```bash
+# Rate Limiting (Optional)
+REDIS_URL=rediss://default:<token>@<host>:<port>
+
+# Logging
+LOG_LEVEL=INFO
+
+# Model Configuration
+SEXISM_THRESHOLD=0.400
+
+# Severity Thresholds
+SEVERITY_HIGH=0.6
+SEVERITY_MODERATE=0.3
+SEVERITY_LOW=0.1
+```
+
+## Environment Variables
+
+### Rate Limiting
+
+<ParamField path="REDIS_URL" type="string" default="None">
+  Redis connection URL for rate limiting (Upstash compatible)
+
+  **Format**: `rediss://default:<token>@<host>:<port>`
+
+  **Required**: No (rate limiting disabled if not set)
+
+  **Example**: `rediss://default:abc123@redis-12345.upstash.io:6379`
+</ParamField>
+
+### Logging
+
+<ParamField path="LOG_LEVEL" type="string" default="INFO">
+  Logging level for the application
+
+  **Options**: `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`
+
+  **Recommended**: `INFO` for production, `DEBUG` for development
+</ParamField>
+
+### Model Configuration
+
+<ParamField path="SEXISM_THRESHOLD" type="float" default="0.400">
+  Threshold for sexism classifier
+
+  **Range**: 0.0 to 1.0
+
+  **Default**: 0.400 (optimized for F1 score)
+
+  **Higher values**: Fewer false positives, more false negatives
+  **Lower values**: More false positives, fewer false negatives
+</ParamField>
+
+<ParamField path="TOXICITY_MODEL_NAME" type="string" default="unitary/unbiased-toxic-roberta">
+  HuggingFace model name for toxicity detection
+
+  **Options**: Any HuggingFace toxicity model
+
+  **Default**: `unitary/unbiased-toxic-roberta`
+</ParamField>
+
+### Severity Thresholds
+
+<ParamField path="SEVERITY_HIGH" type="float" default="0.6">
+  Threshold for "high" severity classification
+
+  **Range**: 0.0 to 1.0
+
+  Scores >= this value are considered "high" severity
+</ParamField>
+
+<ParamField path="SEVERITY_MODERATE" type="float" default="0.3">
+  Threshold for "moderate" severity classification
+
+  **Range**: 0.0 to 1.0
+
+  Scores >= this value (but < SEVERITY_HIGH) are considered "moderate" severity
+</ParamField>
+
+<ParamField path="SEVERITY_LOW" type="float" default="0.1">
+  Threshold for "low" severity classification
+
+  **Range**: 0.0 to 1.0
+
+  Scores >= this value (but < SEVERITY_MODERATE) are considered "low" severity
+</ParamField>
+
+## Example Configurations
+
+<Tabs>
+  <Tab title="Development">
+    ```bash
+    # Development configuration
+    LOG_LEVEL=DEBUG
+    SEXISM_THRESHOLD=0.400
+    # No Redis - rate limiting disabled
+    ```
+  </Tab>
+
+  <Tab title="Production">
+    ```bash
+    # Production configuration
+    REDIS_URL=rediss://default:token@redis.upstash.io:6379
+    LOG_LEVEL=INFO
+    SEXISM_THRESHOLD=0.400
+    SEVERITY_HIGH=0.6
+    SEVERITY_MODERATE=0.3
+    ```
+  </Tab>
+
+  <Tab title="Strict Moderation">
+    ```bash
+    # Stricter moderation thresholds
+    REDIS_URL=rediss://default:token@redis.upstash.io:6379
+    LOG_LEVEL=INFO
+    SEXISM_THRESHOLD=0.300  # Lower threshold
+    SEVERITY_HIGH=0.5       # Lower threshold
+    SEVERITY_MODERATE=0.2   # Lower threshold
+    ```
+  </Tab>
+</Tabs>
+
+## Loading Configuration
+
+The API automatically loads the `.env` file on startup:
+
+```python
+# backend/app/config.py
+from pydantic_settings import BaseSettings
+
+class Settings(BaseSettings):
+    REDIS_URL: Optional[str] = None
+    LOG_LEVEL: str = "INFO"
+    SEXISM_THRESHOLD: float = 0.400
+    # ... other settings
+
+    class Config:
+        env_file = ".env"
+
+settings = Settings()
+```
+
+## See Also
+
+- [Rate Limiting](/configuration/rate-limiting) - Configure rate limits
+- [Installation](/installation) - Setup guide
+- [Quickstart](/quickstart) - Getting started

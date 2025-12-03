@@ -1,0 +1,214 @@
+---
+title: "Changelog"
+description: "Version history and updates for Guardian API"
+---
+
+## Version History
+
+All notable changes to Guardian API are documented here.
+
+---
+
+## [1.0.0] - 2024-12-02
+
+### 🎉 Initial Release
+
+First production release of Guardian API with full documentation.
+
+### Added
+
+**Core Features:**
+- ✅ Multi-model content moderation system
+- ✅ Four coordinated models (Sexism, Toxicity, Rules, Ensemble)
+- ✅ FastAPI backend with async support
+- ✅ REST API with OpenAPI documentation
+- ✅ Batch processing support (up to 100 texts)
+
+**Models:**
+- ✅ Custom LASSO sexism classifier (82% F1 score)
+- ✅ HuggingFace toxicity transformer
+- ✅ Rule-based heuristics engine
+- ✅ Ensemble aggregation with weighted fusion
+
+**Infrastructure:**
+- ✅ Rate limiting with Redis/Upstash
+- ✅ GPU acceleration support
+- ✅ Comprehensive error handling
+- ✅ Logging and monitoring
+- ✅ Docker containerization
+
+**SDKs:**
+- ✅ Python SDK with type hints
+- ✅ JavaScript/TypeScript SDK
+- ✅ Usage examples and documentation
+
+**Documentation:**
+- ✅ Complete API reference
+- ✅ Quickstart guide
+- ✅ Installation instructions
+- ✅ Architecture documentation
+- ✅ Model explanations
+- ✅ Use case guides
+
+### Performance
+- Average response time: 20-40ms
+- GPU acceleration: 15-25ms
+- Batch processing: 5-10ms per text
+
+---
+
+## [0.3.0] - 2024-11-28
+
+### Added
+- JavaScript/TypeScript SDK
+- Batch processing endpoint
+- Rate limiting infrastructure
+- Health check and model info endpoints
+
+### Changed
+- Improved ensemble logic with conflict resolution
+- Optimized sexism classifier threshold (0.373 → 0.400)
+- Enhanced preprocessing pipeline
+
+### Fixed
+- Edge cases in rule pattern matching
+- Toxicity model GPU fallback behavior
+
+---
+
+## [0.2.0] - 2024-11-20
+
+### Added
+- Python SDK
+- Rule-based heuristics engine
+- Ensemble aggregation model
+- Comprehensive test suite (72 tests)
+
+### Changed
+- Refactored model architecture
+- Improved API response structure
+- Enhanced error handling
+
+---
+
+## [0.1.0] - 2024-11-15
+
+### Added
+- Initial FastAPI backend
+- LASSO sexism classifier
+- HuggingFace toxicity model
+- Basic moderation endpoint
+- OpenAPI documentation
+
+### Academic Milestone
+- Successfully completed CSC 380 ML project requirements
+- Achieved >80% F1 score on sexism classification
+- Demonstrated production-grade ML engineering
+
+---
+
+## Upcoming Features
+
+### Planned for v1.1.0
+- [ ] Frontend playground application
+- [ ] Real-time dashboard
+- [ ] API key authentication system
+- [ ] Usage analytics and logging
+- [ ] Model performance metrics
+
+### Planned for v1.2.0
+- [ ] Multilingual support
+- [ ] Additional harm categories
+- [ ] Conversation-level context analysis
+- [ ] Custom model training API
+- [ ] A/B testing framework
+
+### Planned for v2.0.0
+- [ ] Image moderation capabilities
+- [ ] Video content analysis
+- [ ] Audio transcription + moderation
+- [ ] Real-time streaming support
+- [ ] GraphQL API
+
+---
+
+## Version Numbering
+
+Guardian API follows [Semantic Versioning](https://semver.org/):
+
+- **MAJOR** version: Incompatible API changes
+- **MINOR** version: New functionality (backwards compatible)
+- **PATCH** version: Bug fixes (backwards compatible)
+
+Format: `MAJOR.MINOR.PATCH` (e.g., `1.0.0`)
+
+---
+
+## Deprecation Policy
+
+### Breaking Changes
+- Announced at least 3 months in advance
+- Documented in changelog and migration guide
+- Deprecated features maintained for 2 minor versions
+
+### API Versioning
+- All endpoints prefixed with version: `/v1/`, `/v2/`, etc.
+- Old versions supported for 12 months after new version release
+- Clear migration paths provided
+
+---
+
+## Release Notes
+
+### How to Update
+
+**Backend:**
+```bash
+cd backend
+git pull origin main
+pip install -r requirements.txt --upgrade
+uvicorn app.main:app --reload
+```
+
+**Python SDK:**
+```bash
+pip install guardian-api --upgrade
+```
+
+**JavaScript SDK:**
+```bash
+npm install guardian-api-sdk@latest
+```
+
+---
+
+## Staying Updated
+
+<CardGroup cols={2}>
+  <Card title="GitHub Releases" icon="github" href="https://github.com/Ksmith18skc/GuardianAPI/releases">
+    Follow releases on GitHub for detailed release notes
+  </Card>
+  <Card title="Changelog Feed" icon="rss" href="https://github.com/Ksmith18skc/GuardianAPI">
+    Subscribe to updates via GitHub watch
+  </Card>
+  <Card title="Issues & Discussions" icon="comments" href="https://github.com/Ksmith18skc/GuardianAPI/issues">
+    Report bugs and request features
+  </Card>
+  <Card title="Documentation" icon="book" href="/quickstart">
+    Check docs for latest features and guides
+  </Card>
+</CardGroup>
+
+---
+
+## Creator
+
+Guardian API is created and maintained by **Kory Smith**.
+
+Want to contribute? Check out our [GitHub repository](https://github.com/Ksmith18skc/GuardianAPI)!
+
+---
+
+<Note>
+  **Note**: Guardian API is actively developed. This changelog is updated with each release. For the latest development updates, see the [GitHub commit history](https://github.com/Ksmith18skc/GuardianAPI/commits/main).
+</Note>

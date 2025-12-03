@@ -1,0 +1,330 @@
+---
+title: "POST /v1/moderate/text"
+description: "Moderate a single text"
+---
+
+## Endpoint
+
+```
+POST /v1/moderate/text
+```
+
+Analyzes a single text through all three models (sexism classifier, toxicity transformer, rule engine) and returns a comprehensive moderation response with ensemble scoring.
+
+## Request
+
+### Headers
+
+| Header | Value | Required |
+|--------|-------|----------|
+| `Content-Type` | `application/json` | Yes |
+
+### Body Parameters
+
+<ParamField body="text" type="string" required>
+  The text to moderate. Should be a non-empty string.
+
+  **Min length**: 1 character
+  **Max length**: 10,000 characters (recommended)
+</ParamField>
+
+### Request Example
+
+<CodeGroup>
+```bash cURL
+curl -X POST "http://localhost:8000/v1/moderate/text" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "Your text to moderate here"
+  }'
+```
+
+```python Python SDK
+from guardian_api import GuardianClient
+
+client = GuardianClient(base_url="http://localhost:8000")
+result = client.moderate_text("Your text to moderate here")
+print(result)
+```
+
+```javascript JavaScript SDK
+import { GuardianClient } from 'guardian-api-sdk';
+
+const client = new GuardianClient({
+  baseUrl: 'http://localhost:8000'
+});
+
+const result = await client.moderateText('Your text to moderate here');
+console.log(result);
+```
+
+```python Python (requests)
+import requests
+
+response = requests.post(
+    "http://localhost:8000/v1/moderate/text",
+    json={"text": "Your text to moderate here"}
+)
+print(response.json())
+```
+
+```javascript JavaScript (fetch)
+const response = await fetch('http://localhost:8000/v1/moderate/text', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ text: 'Your text to moderate here' })
+});
+
+const data = await response.json();
+console.log(data);
+```
+</CodeGroup>
+
+## Response
+
+Returns a [ModerationResponse](/api-reference/schemas/response#moderation-response) object with:
+- Individual model outputs (`label`)
+- Ensemble decision (`ensemble`)
+- Metadata (`meta`)
+
+### Response Schema
+
+```json
+{
+  "text": "string",
+  "label": {
+    "sexism": {
+      "score": "number",
+      "severity": "string",
+      "model_version": "string",
+      "threshold_met": "boolean"
+    },
+    "toxicity": {
+      "overall": "number",
+      "insult": "number",
+      "threat": "number",
+      "identity_attack": "number",
+      "profanity": "number",
+      "model_version": "string"
+    },
+    "rules": {
+      "slur_detected": "boolean",
+      "threat_detected": "boolean",
+      "self_harm_flag": "boolean",
+      "profanity_flag": "boolean",
+      "caps_abuse": "boolean",
+      "character_repetition": "boolean",
+      "model_version": "string"
+    }
+  },
+  "ensemble": {
+    "summary": "string",
+    "primary_issue": "string",
+    "score": "number",
+    "severity": "string"
+  },
+  "meta": {
+    "processing_time_ms": "integer",
+    "models_used": ["string"]
+  }
+}
+```
+
+### Success Response (200)
+
+<Tabs>
+  <Tab title="Safe Content">
+    ```json
+    {
+      "text": "I love this product!",
+      "label": {
+        "sexism": {
+          "score": 0.043,
+          "severity": "low",
+          "model_version": "sexism_lasso_v1",
+          "threshold_met": false
+        },
+        "toxicity": {
+          "overall": 0.021,
+          "insult": 0.012,
+          "threat": 0.008,
+          "identity_attack": 0.010,
+          "profanity": 0.015,
+          "model_version": "toxic_roberta_v1"
+        },
+        "rules": {
+          "slur_detected": false,
+          "threat_detected": false,
+          "self_harm_flag": false,
+          "profanity_flag": false,
+          "caps_abuse": false,
+          "character_repetition": false,
+          "model_version": "rules_v1"
+        }
+      },
+      "ensemble": {
+        "summary": "likely_safe",
+        "primary_issue": "none",
+        "score": 0.024,
+        "severity": "low"
+      },
+      "meta": {
+        "processing_time_ms": 19,
+        "models_used": [
+          "sexism_lasso_v1",
+          "toxic_roberta_v1",
+          "rules_v1"
+        ]
+      }
+    }
+    ```
+  </Tab>
+
+  <Tab title="Harmful Content">
+    ```json
+    {
+      "text": "Women belong in the kitchen",
+      "label": {
+        "sexism": {
+          "score": 0.847,
+          "severity": "high",
+          "model_version": "sexism_lasso_v1",
+          "threshold_met": true
+        },
+        "toxicity": {
+          "overall": 0.621,
+          "insult": 0.543,
+          "threat": 0.087,
+          "identity_attack": 0.621,
+          "profanity": 0.124,
+          "model_version": "toxic_roberta_v1"
+        },
+        "rules": {
+          "slur_detected": false,
+          "threat_detected": false,
+          "self_harm_flag": false,
+          "profanity_flag": false,
+          "caps_abuse": false,
+          "character_repetition": false,
+          "model_version": "rules_v1"
+        }
+      },
+      "ensemble": {
+        "summary": "highly_harmful",
+        "primary_issue": "sexism",
+        "score": 0.689,
+        "severity": "high"
+      },
+      "meta": {
+        "processing_time_ms": 27,
+        "models_used": [
+          "sexism_lasso_v1",
+          "toxic_roberta_v1",
+          "rules_v1"
+        ]
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Error Responses
+
+<AccordionGroup>
+  <Accordion title="400 Bad Request">
+    **Cause**: Invalid request body or empty text
+
+    ```json
+    {
+      "detail": [
+        {
+          "loc": ["body", "text"],
+          "msg": "field required",
+          "type": "value_error.missing"
+        }
+      ]
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="422 Unprocessable Entity">
+    **Cause**: Request body doesn't match expected schema
+
+    ```json
+    {
+      "detail": [
+        {
+          "loc": ["body", "text"],
+          "msg": "str type expected",
+          "type": "type_error.str"
+        }
+      ]
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="500 Internal Server Error">
+    **Cause**: Server error during processing
+
+    ```json
+    {
+      "detail": "Error processing moderation: [error message]"
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Performance
+
+| Metric | Value |
+|--------|-------|
+| **Average Response Time** | 20-40ms |
+| **With GPU** | 15-25ms |
+| **Without GPU** | 40-60ms |
+| **Rate Limit** | Configurable (via Redis) |
+
+<Tip>
+  For optimal performance with multiple texts, use the [batch endpoint](/api-reference/moderate-batch) instead of making multiple individual requests.
+</Tip>
+
+## Use Cases
+
+- **Real-time moderation**: Moderate user comments before posting
+- **Content filtering**: Screen user-generated content
+- **Chat moderation**: Filter messages in real-time
+- **Form validation**: Check text inputs on submission
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Preprocessing" icon="filter">
+    The API handles preprocessing automatically. Send raw user input without manual cleaning.
+  </Card>
+  <Card title="Use Ensemble" icon="layer-group">
+    Rely on `ensemble.summary` for quick decisions. Individual model outputs are available for detailed analysis.
+  </Card>
+  <Card title="Handle Errors" icon="triangle-exclamation">
+    Implement proper error handling. The API returns detailed error messages.
+  </Card>
+  <Card title="Monitor Latency" icon="gauge">
+    Track `processing_time_ms` to monitor performance and detect issues.
+  </Card>
+</CardGroup>
+
+## Related Endpoints
+
+<CardGroup cols={2}>
+  <Card title="Batch Moderation" icon="list" href="/api-reference/moderate-batch">
+    Moderate multiple texts at once
+  </Card>
+  <Card title="Health Check" icon="heart-pulse" href="/api-reference/health">
+    Check API health status
+  </Card>
+</CardGroup>
+
+## See Also
+
+- [Response Structure](/concepts/response-structure) - Understanding the response
+- [Ensemble Logic](/concepts/ensemble) - How scores are calculated
+- [Python SDK](/sdks/python) - Python client library
+- [JavaScript SDK](/sdks/javascript) - JavaScript/TypeScript client library

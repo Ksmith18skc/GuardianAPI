@@ -1,0 +1,101 @@
+---
+title: "Rate Limiting"
+description: "Configure rate limiting with Redis"
+---
+
+## Overview
+
+Guardian API supports optional rate limiting using Redis (Upstash compatible). Rate limiting helps prevent API abuse and ensures fair usage.
+
+## Setup
+
+### 1. Create Upstash Redis Database
+
+1. Create a free account at [Upstash](https://upstash.com)
+2. Create a new Redis database
+3. Copy the Redis URL from your dashboard
+
+### 2. Configure Environment
+
+Add to `backend/.env`:
+
+```bash
+REDIS_URL=rediss://default:<your-token>@<your-host>:6379
+```
+
+### 3. Restart API
+
+```bash
+cd backend
+uvicorn app.main:app --reload
+```
+
+Rate limiting is now active!
+
+## Default Limits
+
+| Limit Type | Default Value |
+|------------|---------------|
+| **Requests per IP** | 100 per minute |
+| **Window** | 60 seconds |
+
+## Behavior
+
+### When Limit Exceeded
+
+**Response Code**: 429 Too Many Requests
+
+**Response Body**:
+```json
+{
+  "detail": "Rate limit exceeded. Try again later."
+}
+```
+
+### Fail-Open Design
+
+If Redis is unavailable:
+- API continues to work
+- Rate limiting is temporarily disabled
+- Warning logged but requests succeed
+
+<Info>
+  This fail-open design ensures the API remains available even if Redis has issues.
+</Info>
+
+## Custom Rate Limits
+
+To customize rate limits, modify `backend/app/core/rate_limit.py`:
+
+```python
+# Example: Increase limit to 200 requests per minute
+async def check_rate_limit(request: Request):
+    # ... existing code ...
+    limit = 200  # Increased from 100
+    window = 60  # seconds
+    # ... rest of implementation ...
+```
+
+## Monitoring
+
+Check rate limit usage by monitoring Redis:
+
+```bash
+# Connect to Redis
+redis-cli -u $REDIS_URL
+
+# Check rate limit keys
+KEYS rate_limit:*
+
+# Get count for specific IP
+GET rate_limit:192.168.1.1
+```
+
+## Disable Rate Limiting
+
+To disable rate limiting, simply don't set `REDIS_URL` in your `.env` file or remove it entirely.
+
+## See Also
+
+- [Environment Variables](/configuration/environment) - All configuration options
+- [Installation](/installation) - Setup guide

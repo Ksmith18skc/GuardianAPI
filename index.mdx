@@ -1,0 +1,123 @@
+---
+title: "Guardian API Documentation"
+description: "Multi-model, multi-label content moderation service"
+---
+
+## Welcome to Guardian API
+
+Guardian API is a production-ready content moderation service that combines multiple AI models and rule-based heuristics to provide comprehensive text analysis. Built with FastAPI, it offers a robust, scalable solution for detecting harmful content across multiple categories.
+
+<Card
+  title="Get Started"
+  icon="rocket"
+  href="/quickstart"
+  horizontal
+>
+  Start moderating content in minutes with our quickstart guide.
+</Card>
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card
+    title="Multi-Model Architecture"
+    icon="brain"
+  >
+    Four coordinated models working together: Sexism classifier, toxicity transformer, rule engine, and ensemble aggregator.
+  </Card>
+  <Card
+    title="Multi-Label Detection"
+    icon="shield-check"
+  >
+    Detects sexism, toxicity, threats, self-harm, profanity, and other harmful content categories.
+  </Card>
+  <Card
+    title="Production-Ready"
+    icon="server"
+  >
+    FastAPI backend with proper error handling, logging, rate limiting, and comprehensive testing.
+  </Card>
+  <Card
+    title="Developer-Friendly"
+    icon="code"
+  >
+    OpenAPI documentation, structured JSON responses, and SDKs for Python and JavaScript/TypeScript.
+  </Card>
+</CardGroup>
+
+## How It Works
+
+Guardian API uses a sophisticated ensemble approach:
+
+1. **Preprocessing**: Text is cleaned and normalized
+2. **Model Inference**: Three models analyze the content in parallel:
+   - Custom LASSO sexism classifier
+   - HuggingFace toxicity transformer
+   - Rule-based heuristics engine
+3. **Ensemble**: Results are aggregated using weighted fusion and conflict resolution
+4. **Response**: Structured JSON with scores, severity levels, and metadata
+
+<Note>
+  The ensemble model intelligently combines outputs from all models, with rule-based detections overriding low confidence scores for critical issues like threats and self-harm.
+</Note>
+
+## Quick Example
+
+```bash
+curl -X POST "http://localhost:8000/v1/moderate/text" \
+  -H "Content-Type: application/json" \
+  -d '{"text": "Your text to moderate here"}'
+```
+
+**Response:**
+
+```json
+{
+  "text": "Your text to moderate here",
+  "label": {
+    "sexism": {"score": 0.12, "severity": "low"},
+    "toxicity": {"overall": 0.08},
+    "rules": {"slur_detected": false, "threat_detected": false}
+  },
+  "ensemble": {
+    "summary": "likely_safe",
+    "score": 0.10,
+    "severity": "low"
+  },
+  "meta": {
+    "processing_time_ms": 24,
+    "models_used": ["sexism_lasso_v1", "toxic_roberta_v1", "rules_v1"]
+  }
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="play" href="/quickstart">
+    Set up and run Guardian API locally
+  </Card>
+  <Card title="Architecture" icon="sitemap" href="/concepts/architecture">
+    Learn about the multi-model architecture
+  </Card>
+  <Card title="API Reference" icon="book" href="/api-reference/moderate-text">
+    Explore the REST API endpoints
+  </Card>
+  <Card title="SDKs" icon="code" href="/sdks/python">
+    Use our Python or JavaScript SDKs
+  </Card>
+</CardGroup>
+
+## Use Cases
+
+- **Social Media Platforms**: Moderate user comments and posts
+- **Chat Applications**: Real-time message filtering
+- **Content Platforms**: Screen user-generated content
+- **Community Forums**: Maintain healthy discussions
+- **Customer Support**: Flag inappropriate messages
+
+## Author
+
+Guardian API is developed and maintained by **Kory Smith**.
+
+Originally created as a CSC 380 (Machine Learning) sexism classification project at the University of Arizona.

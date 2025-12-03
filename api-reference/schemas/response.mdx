@@ -1,0 +1,79 @@
+---
+title: "Response Schemas"
+description: "Guardian API response schemas"
+---
+
+## ModerationResponse
+
+Response schema for single text moderation.
+
+### Complete Schema
+
+```json
+{
+  "text": "string",
+  "label": {
+    "sexism": {
+      "score": "number",
+      "severity": "string",
+      "model_version": "string",
+      "threshold_met": "boolean"
+    },
+    "toxicity": {
+      "overall": "number",
+      "insult": "number",
+      "threat": "number",
+      "identity_attack": "number",
+      "profanity": "number",
+      "model_version": "string"
+    },
+    "rules": {
+      "slur_detected": "boolean",
+      "threat_detected": "boolean",
+      "self_harm_flag": "boolean",
+      "profanity_flag": "boolean",
+      "caps_abuse": "boolean",
+      "character_repetition": "boolean",
+      "model_version": "string"
+    }
+  },
+  "ensemble": {
+    "summary": "string",
+    "primary_issue": "string",
+    "score": "number",
+    "severity": "string"
+  },
+  "meta": {
+    "processing_time_ms": "integer",
+    "models_used": ["string"]
+  }
+}
+```
+
+## BatchModerationResponse
+
+Response schema for batch moderation.
+
+### Schema
+
+```json
+{
+  "results": [ModerationResponse],
+  "total_processed": "integer",
+  "processing_time_ms": "integer"
+}
+```
+
+### Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `results` | array | Array of ModerationResponse objects |
+| `total_processed` | integer | Number of texts successfully processed |
+| `processing_time_ms` | integer | Total processing time in milliseconds |
+
+## See Also
+
+- [Response Structure](/concepts/response-structure) - Detailed explanation
+- [Request Schemas](/api-reference/schemas/request) - Request format
+- [API Reference](/api-reference/moderate-text) - Endpoint documentation

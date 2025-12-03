@@ -1,0 +1,361 @@
+---
+title: "Models"
+description: "Deep dive into Guardian API's four models"
+---
+
+## Overview
+
+Guardian API uses **four models** working in parallel to provide comprehensive content moderation. Each model specializes in different aspects of harmful content detection.
+
+## Model 1: Sexism Classifier
+
+<Card title="LASSO Regression Model" icon="1">
+Custom-trained binary classifier for sexism detection
+</Card>
+
+### Technical Details
+
+| Attribute | Value |
+|-----------|-------|
+| **Algorithm** | LASSO (Least Absolute Shrinkage and Selection Operator) |
+| **Training Data** | ~40,000 labeled tweets |
+| **Features** | 2,500 n-grams (1-2) + 3 additional features |
+| **Threshold** | 0.400 (optimized for F1 score) |
+| **Performance** | ~82% F1 score on test set |
+| **Version** | `sexism_lasso_v1` |
+
+### Feature Engineering
+
+The model uses a combination of text and numerical features:
+
+<Tabs>
+  <Tab title="Text Features">
+    **CountVectorizer Configuration:**
+    - **max_features**: 2,500
+    - **ngram_range**: (1, 2)
+    - **min_df**: 2 (minimum document frequency)
+    - **max_df**: 0.8 (maximum document frequency)
+    - **stop_words**: English (with gendered words preserved)
+
+    **Preserved Gendered Words:**
+    - Pronouns: he, him, she, her, etc.
+    - Nouns: man, woman, men, women, boy, girl
+    - Important for detecting sexist language patterns
+  </Tab>
+
+  <Tab title="Additional Features">
+    1. **Text Length**: Number of tokens
+       - Helps identify verbose vs. concise comments
+
+    2. **Exclamation Marks**: Count of `!`
+       - Captures emotional intensity
+
+    3. **Sentiment Score**: VADER compound score (-1 to 1)
+       - Measures overall sentiment polarity
+  </Tab>
+</Tabs>
+
+### Prediction Process
+
+```python
+# Example prediction flow
+text = "Your input text here"
+
+# 1. Preprocess (lowercase, remove URLs, etc.)
+processed = preprocess_text(text)
+
+# 2. Vectorize text
+X_text = vectorizer.transform([processed])  # 2500 features
+
+# 3. Extract additional features
+extra = [length, exclaim_count, sentiment]  # 3 features
+
+# 4. Combine features
+X_combined = hstack([X_text, extra])  # 2503 total features
+
+# 5. Predict with LASSO
+score = model.predict(X_combined)[0]  # 0.0 to 1.0
+
+# 6. Apply threshold
+is_sexist = score >= 0.400
+```
+
+### Output Format
+
+```json
+{
+  "score": 0.724,
+  "severity": "high",
+  "model_version": "sexism_lasso_v1",
+  "threshold_met": true
+}
+```
+
+## Model 2: Toxicity Transformer
+
+<Card title="HuggingFace Transformer" icon="2">
+Multi-label toxicity detection using RoBERTa
+</Card>
+
+### Technical Details
+
+| Attribute | Value |
+|-----------|-------|
+| **Architecture** | RoBERTa (Robustly Optimized BERT) |
+| **Model Name** | `unitary/unbiased-toxic-roberta` |
+| **Type** | Multi-label classification |
+| **Device** | CUDA (GPU) if available, CPU fallback |
+| **Max Length** | 512 tokens |
+| **Version** | `toxic_roberta_v1` |
+
+### Toxicity Categories
+
+The model detects **7 categories** of toxicity:
+
+<CardGroup cols={2}>
+  <Card title="Overall Toxicity" icon="shield-halved">
+    General toxic language score
+  </Card>
+  <Card title="Severe Toxicity" icon="shield-exclamation">
+    Extremely harmful content
+  </Card>
+  <Card title="Obscene" icon="eye-slash">
+    Vulgar or obscene language
+  </Card>
+  <Card title="Threat" icon="skull-crossbones">
+    Threatening language
+  </Card>
+  <Card title="Insult" icon="face-angry">
+    Personal insults and attacks
+  </Card>
+  <Card title="Identity Attack" icon="user-slash">
+    Attacks on identity groups
+  </Card>
+  <Card title="Sexual Explicit" icon="ban">
+    Sexually explicit content
+  </Card>
+</CardGroup>
+
+### Device Management
+
+<Accordion title="GPU Acceleration">
+  The toxicity model automatically uses GPU if available:
+
+  ```python
+  device = "cuda" if torch.cuda.is_available() else "cpu"
+  model.to(device)
+  ```
+
+  **Performance Comparison:**
+  - **GPU (RTX 4050)**: ~10-15ms per request
+  - **CPU**: ~40-60ms per request
+
+  **Memory Usage:**
+  - **GPU**: ~2GB VRAM
+  - **CPU**: ~1GB RAM
+</Accordion>
+
+### Output Format
+
+```json
+{
+  "overall": 0.742,
+  "insult": 0.631,
+  "threat": 0.123,
+  "identity_attack": 0.412,
+  "profanity": 0.584,
+  "model_version": "toxic_roberta_v1"
+}
+```
+
+<Note>
+  The `overall` score is automatically set to at least the maximum of all sub-category scores.
+</Note>
+
+## Model 3: Rule Engine
+
+<Card title="Heuristic-Based System" icon="3">
+Pattern matching and rule-based detection
+</Card>
+
+### Technical Details
+
+| Attribute | Value |
+|-----------|-------|
+| **Type** | Rule-based heuristics |
+| **Rules** | JSON configuration files |
+| **Pattern Matching** | Regex + exact matching |
+| **Extensible** | Easy to add new rules |
+| **Version** | `rules_v1` |
+
+### Rule Categories
+
+<Tabs>
+  <Tab title="Slurs">
+    **File**: `backend/app/models/rules/slurs.json`
+
+    **Detection**: Exact word matching (case-insensitive)
+
+    **Purpose**: Identify hate speech and slurs
+
+    **Format**:
+    ```json
+    {
+      "slurs": [
+        "slur1",
+        "slur2",
+        "..."
+      ]
+    }
+    ```
+  </Tab>
+
+  <Tab title="Threats">
+    **File**: `backend/app/models/rules/threats.json`
+
+    **Detection**: Regex pattern matching
+
+    **Purpose**: Detect violent threats and dangerous intent
+
+    **Example Patterns**:
+    - `kill|murder|destroy + you|them|yourself`
+    - `I will|I'll + kill|hurt|attack`
+    - `bomb|explosive|weapon|gun`
+
+    **Format**:
+    ```json
+    {
+      "patterns": [
+        "regex_pattern_1",
+        "regex_pattern_2"
+      ]
+    }
+    ```
+  </Tab>
+
+  <Tab title="Self-Harm">
+    **File**: `backend/app/models/rules/self_harm.json`
+
+    **Detection**: Phrase matching (case-insensitive)
+
+    **Purpose**: Identify self-harm and suicidal ideation
+
+    **Example Phrases**:
+    - "kill myself"
+    - "end my life"
+    - "commit suicide"
+    - "want to die"
+
+    **Format**:
+    ```json
+    {
+      "phrases": [
+        "phrase1",
+        "phrase2"
+      ]
+    }
+    ```
+  </Tab>
+
+  <Tab title="Profanity">
+    **File**: `backend/app/models/rules/profanity.json`
+
+    **Detection**: Exact word matching
+
+    **Purpose**: Flag profane language
+
+    **Format**:
+    ```json
+    {
+      "profanity": [
+        "word1",
+        "word2"
+      ]
+    }
+    ```
+  </Tab>
+
+  <Tab title="Style Checks">
+    **Caps Abuse**: >70% uppercase characters
+    ```python
+    def detect_caps_abuse(text):
+        return (uppercase_count / total_count) > 0.7
+    ```
+
+    **Character Repetition**: 3+ repeated characters
+    ```python
+    def detect_repetition(text):
+        return bool(re.search(r'(.)\1{2,}', text))
+    ```
+
+    Example: "YESSSS!!!" triggers both flags
+  </Tab>
+</Tabs>
+
+### Output Format
+
+```json
+{
+  "slur_detected": false,
+  "threat_detected": true,
+  "self_harm_flag": false,
+  "profanity_flag": true,
+  "caps_abuse": false,
+  "character_repetition": false,
+  "model_version": "rules_v1"
+}
+```
+
+### Customization
+
+Adding new rules is straightforward:
+
+<Steps>
+  <Step title="Edit JSON File">
+    Navigate to `backend/app/models/rules/` and edit the appropriate JSON file
+  </Step>
+  <Step title="Add Your Rules">
+    - For slurs/profanity: Add words to the array
+    - For threats: Add regex patterns
+    - For self-harm: Add phrases
+  </Step>
+  <Step title="Restart API">
+    The API will automatically load the new rules on startup
+  </Step>
+</Steps>
+
+## Model 4: Ensemble
+
+<Card title="Aggregation Layer" icon="4">
+Combines outputs from all three models
+</Card>
+
+The ensemble model performs intelligent fusion of all model outputs. See [Ensemble](/concepts/ensemble) for details.
+
+## Model Comparison
+
+| Feature | Sexism Classifier | Toxicity Model | Rule Engine |
+|---------|------------------|----------------|-------------|
+| **Type** | ML (LASSO) | ML (Transformer) | Heuristic |
+| **Speed** | Fast (~5ms) | Medium (~15ms GPU) | Fast (~2ms) |
+| **Accuracy** | High (82% F1) | High | Rule-dependent |
+| **Extensibility** | Requires retraining | Requires retraining | Easy (JSON) |
+| **Resource** | Low | Medium-High | Very Low |
+| **False Positives** | Low | Low-Medium | Medium |
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Ensemble" icon="layer-group" href="/concepts/ensemble">
+    Learn how models are combined
+  </Card>
+  <Card title="Response Structure" icon="code" href="/concepts/response-structure">
+    Understand API responses
+  </Card>
+  <Card title="Configuration" icon="gear" href="/configuration/environment">
+    Configure model settings
+  </Card>
+  <Card title="API Reference" icon="book" href="/api-reference/moderate-text">
+    Try the API
+  </Card>
+</CardGroup>
