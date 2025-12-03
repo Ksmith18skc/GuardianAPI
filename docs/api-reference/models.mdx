@@ -1,0 +1,65 @@
+---
+title: "GET /v1/models"
+description: "Get information about loaded models"
+---
+
+## Endpoint
+
+```
+GET /v1/models
+```
+
+Returns detailed information about all models including versions and load status.
+
+## Request
+
+No parameters required.
+
+### Request Example
+
+<CodeGroup>
+```bash cURL
+curl http://localhost:8000/v1/models
+```
+
+```python Python
+import requests
+response = requests.get("http://localhost:8000/v1/models")
+print(response.json())
+```
+</CodeGroup>
+
+## Response
+
+### Success Response (200)
+
+```json
+{
+  "models": [
+    {
+      "name": "Sexism Classifier (LASSO)",
+      "version": "sexism_lasso_v1",
+      "loaded": true,
+      "description": "Custom LASSO model trained on ~40k sexist/non-sexist tweets"
+    },
+    {
+      "name": "Toxicity Transformer",
+      "version": "toxic_roberta_v1",
+      "loaded": true,
+      "description": "HuggingFace transformer model for multi-label toxicity detection"
+    },
+    {
+      "name": "Rule-Based Engine",
+      "version": "rules_v1",
+      "loaded": true,
+      "description": "Heuristics engine for slur detection, threats, self-harm, and profanity"
+    }
+  ]
+}
+```
+
+## Use Cases
+
+- Verify all models are loaded before processing
+- Display model information in admin dashboards
+- Track model versions for auditing

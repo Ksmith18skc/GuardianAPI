@@ -1,0 +1,293 @@
+---
+title: "Installation"
+description: "Detailed installation guide for Guardian API"
+---
+
+## System Requirements
+
+### Minimum Requirements
+
+- **Python**: 3.9 or higher
+- **RAM**: 4GB minimum (8GB recommended)
+- **Storage**: 2GB for models and dependencies
+- **OS**: Linux, macOS, or Windows
+
+### Recommended Requirements
+
+For optimal performance:
+
+- **Python**: 3.11
+- **RAM**: 8GB or more
+- **GPU**: CUDA-capable GPU (NVIDIA) for faster inference
+- **CUDA**: 12.1 or compatible version
+
+## Installation Methods
+
+<Tabs>
+  <Tab title="Standard Installation">
+    ### Clone the Repository
+
+    ```bash
+    git clone https://github.com/Ksmith18skc/GuardianAPI.git
+    cd GuardianAPI
+    ```
+
+    ### Install Python Dependencies
+
+    ```bash
+    cd backend
+    pip install -r requirements.txt
+    ```
+
+    ### Train the Sexism Model
+
+    ```bash
+    cd ..
+    python scripts/train_and_save_sexism_model.py
+    ```
+
+    <Check>
+      Installation complete! The API is ready to run.
+    </Check>
+  </Tab>
+
+  <Tab title="With GPU Support">
+    ### Prerequisites
+
+    1. Install [CUDA Toolkit 12.1](https://developer.nvidia.com/cuda-downloads)
+    2. Verify CUDA installation:
+       ```bash
+       nvcc --version
+       ```
+
+    ### Install Dependencies
+
+    ```bash
+    git clone https://github.com/Ksmith18skc/GuardianAPI.git
+    cd GuardianAPI/backend
+
+    # Install CPU-only packages first
+    pip install -r requirements.txt
+
+    # Replace PyTorch with CUDA version
+    pip install torch==2.1.0+cu121 --index-url https://download.pytorch.org/whl/cu121
+    ```
+
+    ### Verify GPU Support
+
+    ```bash
+    python -c "import torch; print(f'CUDA Available: {torch.cuda.is_available()}'); print(f'Device: {torch.cuda.get_device_name(0) if torch.cuda.is_available() else \"CPU\"}')"
+    ```
+
+    Expected output:
+    ```
+    CUDA Available: True
+    Device: NVIDIA GeForce RTX 4050
+    ```
+
+    ### Train the Model
+
+    ```bash
+    cd ..
+    python scripts/train_and_save_sexism_model.py
+    ```
+
+    <Check>
+      GPU-accelerated installation complete!
+    </Check>
+  </Tab>
+
+  <Tab title="Development Setup">
+    ### Clone and Setup Virtual Environment
+
+    ```bash
+    git clone https://github.com/Ksmith18skc/GuardianAPI.git
+    cd GuardianAPI
+
+    # Create virtual environment
+    python -m venv venv
+
+    # Activate virtual environment
+    # On Linux/Mac:
+    source venv/bin/activate
+    # On Windows:
+    venv\Scripts\activate
+    ```
+
+    ### Install Dependencies
+
+    ```bash
+    cd backend
+    pip install -r requirements.txt
+
+    # Install development dependencies
+    pip install pytest pytest-asyncio httpx
+    ```
+
+    ### Train Model and Run Tests
+
+    ```bash
+    cd ..
+    python scripts/train_and_save_sexism_model.py
+
+    cd backend
+    pytest
+    ```
+
+    <Check>
+      Development environment ready! All 72 tests should pass.
+    </Check>
+  </Tab>
+</Tabs>
+
+## Dependency Overview
+
+Guardian API uses the following major dependencies:
+
+| Package | Purpose | Version |
+|---------|---------|---------|
+| `fastapi` | Web framework | Latest |
+| `uvicorn` | ASGI server | Latest |
+| `torch` | PyTorch for ML | 2.1.0+ |
+| `transformers` | HuggingFace models | Latest |
+| `scikit-learn` | LASSO classifier | Latest |
+| `redis` | Rate limiting (optional) | Latest |
+| `pydantic` | Request validation | v2+ |
+
+<Note>
+  A complete list of dependencies is available in `backend/requirements.txt`.
+</Note>
+
+## Training the Sexism Model
+
+The sexism classifier must be trained before running the API. The training script uses the dataset in `data/train_sexism.csv`.
+
+### Training Process
+
+```bash
+python scripts/train_and_save_sexism_model.py
+```
+
+This script:
+1. Loads training data (~40k tweets)
+2. Trains a LASSO regression model with CountVectorizer
+3. Optimizes threshold for best F1 score
+4. Saves model files to `backend/app/models/sexism/`
+
+### Model Files
+
+After training, you'll have:
+- `classifier.pkl` - LASSO regression model
+- `vectorizer.pkl` - CountVectorizer with 2500 features
+
+### Training Output
+
+```
+Training LASSO model...
+Model trained with test F1 score: 0.82
+Optimal threshold: 0.400
+Files saved:
+  - backend/app/models/sexism/classifier.pkl
+  - backend/app/models/sexism/vectorizer.pkl
+```
+
+## Verification
+
+### Verify Installation
+
+Check that all models load correctly:
+
+```bash
+cd backend
+python -c "from app.models.sexism_classifier import SexismClassifier; print('✓ Sexism classifier loads')"
+python -c "from app.models.toxicity_model import ToxicityModel; print('✓ Toxicity model loads')"
+python -c "from app.models.rule_engine import RuleEngine; print('✓ Rule engine loads')"
+```
+
+### Run Tests
+
+```bash
+cd backend
+pytest -v
+```
+
+Expected output:
+```
+========== 72 passed in 12.34s ==========
+```
+
+### Start the API
+
+```bash
+uvicorn app.main:app --reload
+```
+
+Visit http://localhost:8000/docs to see the interactive API documentation.
+
+## Common Issues
+
+<AccordionGroup>
+  <Accordion title="ModuleNotFoundError">
+    **Problem**: Python can't find installed packages
+
+    **Solution**:
+    1. Ensure you're in the correct directory
+    2. Activate your virtual environment if using one
+    3. Reinstall dependencies: `pip install -r requirements.txt`
+  </Accordion>
+
+  <Accordion title="Model files not found">
+    **Problem**: API can't load `classifier.pkl` or `vectorizer.pkl`
+
+    **Solution**:
+    1. Ensure you've run the training script
+    2. Check that files exist: `ls backend/app/models/sexism/`
+    3. If missing, run: `python scripts/train_and_save_sexism_model.py`
+  </Accordion>
+
+  <Accordion title="CUDA out of memory">
+    **Problem**: GPU runs out of memory
+
+    **Solution**:
+    1. Close other GPU-intensive applications
+    2. Reduce batch size (if applicable)
+    3. Fall back to CPU by not installing CUDA-enabled PyTorch
+  </Accordion>
+
+  <Accordion title="Port already in use">
+    **Problem**: Port 8000 is already occupied
+
+    **Solution**:
+    ```bash
+    # Use a different port
+    uvicorn app.main:app --reload --port 8080
+    ```
+  </Accordion>
+
+  <Accordion title="Redis connection errors">
+    **Problem**: Can't connect to Redis for rate limiting
+
+    **Solution**:
+    - Rate limiting is optional and will be disabled if Redis isn't available
+    - Check your `REDIS_URL` in `.env`
+    - Verify Redis is running if using local Redis
+    - For Upstash, ensure the URL is correct
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Follow the quickstart guide to run your first moderation request
+  </Card>
+  <Card title="Configuration" icon="gear" href="/configuration/environment">
+    Configure environment variables and optional features
+  </Card>
+  <Card title="Architecture" icon="sitemap" href="/concepts/architecture">
+    Learn about the system architecture
+  </Card>
+  <Card title="API Reference" icon="book" href="/api-reference/moderate-text">
+    Explore the API endpoints
+  </Card>
+</CardGroup>

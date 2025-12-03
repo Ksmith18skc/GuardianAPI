@@ -1,0 +1,433 @@
+---
+title: "Response Structure"
+description: "Understanding Guardian API responses"
+---
+
+## Overview
+
+Guardian API returns structured JSON responses with comprehensive moderation data from all four models.
+
+## Response Schema
+
+```json
+{
+  "text": string,           // Original or sanitized input
+  "label": {                // Individual model outputs
+    "sexism": {...},
+    "toxicity": {...},
+    "rules": {...}
+  },
+  "ensemble": {...},        // Combined decision
+  "meta": {...}             // Request metadata
+}
+```
+
+## Top-Level Fields
+
+### `text` (string)
+
+The input text that was moderated. May be truncated if very long.
+
+```json
+{
+  "text": "Your input text here"
+}
+```
+
+### `label` (object)
+
+Outputs from all three detection models.
+
+### `ensemble` (object)
+
+Final moderation decision combining all models.
+
+### `meta` (object)
+
+Request metadata including processing time and models used.
+
+## Label Structure
+
+### Sexism Label
+
+```json
+{
+  "label": {
+    "sexism": {
+      "score": 0.724,                    // Confidence score (0-1)
+      "severity": "high",                // "low", "moderate", or "high"
+      "model_version": "sexism_lasso_v1",  // Model identifier
+      "threshold_met": true              // Whether score exceeds threshold
+    }
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `score` | float | LASSO model confidence (0.0 to 1.0) |
+| `severity` | string | Severity level based on score |
+| `model_version` | string | Model identifier for tracking |
+| `threshold_met` | boolean | True if score ≥ 0.400 |
+
+### Toxicity Label
+
+```json
+{
+  "label": {
+    "toxicity": {
+      "overall": 0.742,                  // Overall toxicity score
+      "insult": 0.631,                   // Insult score
+      "threat": 0.123,                   // Threat score
+      "identity_attack": 0.412,          // Identity attack score
+      "profanity": 0.584,                // Profanity score
+      "model_version": "toxic_roberta_v1"  // Model identifier
+    }
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `overall` | float | Maximum toxicity across all categories |
+| `insult` | float | Personal insult score (0-1) |
+| `threat` | float | Threatening language score (0-1) |
+| `identity_attack` | float | Identity-based attack score (0-1) |
+| `profanity` | float | Profane language score (0-1) |
+| `model_version` | string | Model identifier |
+
+<Note>
+  The `overall` score is automatically set to at least the maximum of all sub-category scores.
+</Note>
+
+### Rules Label
+
+```json
+{
+  "label": {
+    "rules": {
+      "slur_detected": false,            // Slur flag
+      "threat_detected": true,           // Threat pattern flag
+      "self_harm_flag": false,           // Self-harm phrase flag
+      "profanity_flag": true,            // Profanity flag
+      "caps_abuse": false,               // Excessive caps flag
+      "character_repetition": false,     // Repeated chars flag
+      "model_version": "rules_v1"        // Model identifier
+    }
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `slur_detected` | boolean | True if slurs found |
+| `threat_detected` | boolean | True if threat patterns matched |
+| `self_harm_flag` | boolean | True if self-harm phrases found |
+| `profanity_flag` | boolean | True if profanity detected |
+| `caps_abuse` | boolean | True if >70% uppercase |
+| `character_repetition` | boolean | True if 3+ repeated characters |
+| `model_version` | string | Model identifier |
+
+## Ensemble Structure
+
+The ensemble object provides the **final moderation decision**:
+
+```json
+{
+  "ensemble": {
+    "summary": "likely_harmful",       // Overall assessment
+    "primary_issue": "sexism",         // Main concern
+    "score": 0.612,                    // Combined score (0-1)
+    "severity": "high"                 // "low", "moderate", or "high"
+  }
+}
+```
+
+### Summary Values
+
+| Value | Score Range | Meaning |
+|-------|-------------|---------|
+| `likely_safe` | 0.0 - 0.1 | No significant harmful content |
+| `potentially_harmful` | 0.1 - 0.3 | Some harmful indicators present |
+| `likely_harmful` | 0.3 - 0.6 | Probable harmful content |
+| `highly_harmful` | 0.6 - 1.0 | Strong evidence of harmful content |
+
+### Primary Issue Values
+
+| Value | Description |
+|-------|-------------|
+| `"none"` | No significant issues detected |
+| `"sexism"` | Sexist content is the main concern |
+| `"toxicity"` | Toxic language is the main concern |
+| `"slur"` | Slur detected by rules |
+| `"threat"` | Threat detected by rules |
+| `"self_harm"` | Self-harm content detected |
+| `"harmful_content"` | Generic harmful content |
+
+## Meta Structure
+
+Metadata about the request and processing:
+
+```json
+{
+  "meta": {
+    "processing_time_ms": 24,          // Total processing time
+    "models_used": [                   // Models that ran
+      "sexism_lasso_v1",
+      "toxic_roberta_v1",
+      "rules_v1"
+    ]
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `processing_time_ms` | integer | Total time to process request (milliseconds) |
+| `models_used` | array | List of model versions used |
+
+## Complete Example
+
+<Tabs>
+  <Tab title="Harmful Content">
+    **Request**:
+    ```json
+    {
+      "text": "Women belong in the kitchen"
+    }
+    ```
+
+    **Response**:
+    ```json
+    {
+      "text": "Women belong in the kitchen",
+      "label": {
+        "sexism": {
+          "score": 0.847,
+          "severity": "high",
+          "model_version": "sexism_lasso_v1",
+          "threshold_met": true
+        },
+        "toxicity": {
+          "overall": 0.621,
+          "insult": 0.543,
+          "threat": 0.087,
+          "identity_attack": 0.621,
+          "profanity": 0.124,
+          "model_version": "toxic_roberta_v1"
+        },
+        "rules": {
+          "slur_detected": false,
+          "threat_detected": false,
+          "self_harm_flag": false,
+          "profanity_flag": false,
+          "caps_abuse": false,
+          "character_repetition": false,
+          "model_version": "rules_v1"
+        }
+      },
+      "ensemble": {
+        "summary": "highly_harmful",
+        "primary_issue": "sexism",
+        "score": 0.689,
+        "severity": "high"
+      },
+      "meta": {
+        "processing_time_ms": 27,
+        "models_used": [
+          "sexism_lasso_v1",
+          "toxic_roberta_v1",
+          "rules_v1"
+        ]
+      }
+    }
+    ```
+  </Tab>
+
+  <Tab title="Safe Content">
+    **Request**:
+    ```json
+    {
+      "text": "I love this product! It's amazing!"
+    }
+    ```
+
+    **Response**:
+    ```json
+    {
+      "text": "I love this product! It's amazing!",
+      "label": {
+        "sexism": {
+          "score": 0.043,
+          "severity": "low",
+          "model_version": "sexism_lasso_v1",
+          "threshold_met": false
+        },
+        "toxicity": {
+          "overall": 0.021,
+          "insult": 0.012,
+          "threat": 0.008,
+          "identity_attack": 0.010,
+          "profanity": 0.015,
+          "model_version": "toxic_roberta_v1"
+        },
+        "rules": {
+          "slur_detected": false,
+          "threat_detected": false,
+          "self_harm_flag": false,
+          "profanity_flag": false,
+          "caps_abuse": false,
+          "character_repetition": false,
+          "model_version": "rules_v1"
+        }
+      },
+      "ensemble": {
+        "summary": "likely_safe",
+        "primary_issue": "none",
+        "score": 0.024,
+        "severity": "low"
+      },
+      "meta": {
+        "processing_time_ms": 19,
+        "models_used": [
+          "sexism_lasso_v1",
+          "toxic_roberta_v1",
+          "rules_v1"
+        ]
+      }
+    }
+    ```
+  </Tab>
+
+  <Tab title="Mixed Signals">
+    **Request**:
+    ```json
+    {
+      "text": "This is garbage but I'll try again"
+    }
+    ```
+
+    **Response**:
+    ```json
+    {
+      "text": "This is garbage but I'll try again",
+      "label": {
+        "sexism": {
+          "score": 0.123,
+          "severity": "low",
+          "model_version": "sexism_lasso_v1",
+          "threshold_met": false
+        },
+        "toxicity": {
+          "overall": 0.412,
+          "insult": 0.234,
+          "threat": 0.067,
+          "identity_attack": 0.089,
+          "profanity": 0.412,
+          "model_version": "toxic_roberta_v1"
+        },
+        "rules": {
+          "slur_detected": false,
+          "threat_detected": false,
+          "self_harm_flag": false,
+          "profanity_flag": true,
+          "caps_abuse": false,
+          "character_repetition": false,
+          "model_version": "rules_v1"
+        }
+      },
+      "ensemble": {
+        "summary": "likely_harmful",
+        "primary_issue": "toxicity",
+        "score": 0.341,
+        "severity": "moderate"
+      },
+      "meta": {
+        "processing_time_ms": 22,
+        "models_used": [
+          "sexism_lasso_v1",
+          "toxic_roberta_v1",
+          "rules_v1"
+        ]
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Using Response Data
+
+### Decision Making
+
+<Steps>
+  <Step title="Check ensemble.summary">
+    Use the summary for quick decisions:
+    - `"likely_safe"`: Allow content
+    - `"potentially_harmful"`: Flag for review
+    - `"likely_harmful"` or `"highly_harmful"`: Block or moderate
+  </Step>
+
+  <Step title="Check ensemble.primary_issue">
+    Understand why content was flagged:
+    - Show specific feedback to users
+    - Route to appropriate moderators
+    - Apply category-specific rules
+  </Step>
+
+  <Step title="Use individual labels for detail">
+    Access specific model outputs for:
+    - Detailed reporting
+    - Custom threshold logic
+    - Audit trails
+  </Step>
+
+  <Step title="Monitor processing_time_ms">
+    Track performance:
+    - Identify slow requests
+    - Optimize infrastructure
+    - Set appropriate timeouts
+  </Step>
+</Steps>
+
+### Example Implementation
+
+```python
+def handle_moderation_result(response):
+    ensemble = response["ensemble"]
+
+    if ensemble["summary"] == "highly_harmful":
+        # Block immediately
+        return "BLOCK"
+
+    elif ensemble["summary"] == "likely_harmful":
+        # Check specific issues
+        if ensemble["primary_issue"] in ["threat", "self_harm"]:
+            return "BLOCK_AND_ALERT"
+        else:
+            return "HOLD_FOR_REVIEW"
+
+    elif ensemble["summary"] == "potentially_harmful":
+        # Allow with monitoring
+        return "ALLOW_WITH_FLAG"
+
+    else:
+        # Safe to publish
+        return "ALLOW"
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="API Reference" icon="book" href="/api-reference/moderate-text">
+    Try the moderation endpoint
+  </Card>
+  <Card title="Ensemble" icon="layer-group" href="/concepts/ensemble">
+    Learn how scores are calculated
+  </Card>
+  <Card title="Python SDK" icon="python" href="/sdks/python">
+    Use the Python SDK
+  </Card>
+  <Card title="JavaScript SDK" icon="js" href="/sdks/javascript">
+    Use the JavaScript SDK
+  </Card>
+</CardGroup>

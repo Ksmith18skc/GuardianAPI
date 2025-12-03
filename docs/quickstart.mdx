@@ -1,0 +1,230 @@
+---
+title: "Quickstart"
+description: "Get Guardian API up and running in minutes"
+---
+
+## Prerequisites
+
+Before you begin, ensure you have:
+
+- Python 3.9 or higher
+- Git (for cloning the repository)
+- (Optional) CUDA-capable GPU for faster toxicity model inference
+
+## Installation
+
+### Step 1: Clone the Repository
+
+```bash
+git clone https://github.com/Ksmith18skc/GuardianAPI.git
+cd GuardianAPI/backend
+```
+
+### Step 2: Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+<Tip>
+  If you have a CUDA-capable GPU, install PyTorch with CUDA support for faster inference:
+
+  ```bash
+  pip install torch==2.1.0+cu121 --index-url https://download.pytorch.org/whl/cu121
+  ```
+</Tip>
+
+### Step 3: Train the Sexism Model
+
+The sexism classifier needs to be trained before running the API:
+
+```bash
+cd ..
+python scripts/train_and_save_sexism_model.py
+```
+
+This will create:
+- `backend/app/models/sexism/classifier.pkl`
+- `backend/app/models/sexism/vectorizer.pkl`
+
+<Note>
+  Training takes 1-2 minutes and uses the dataset in `data/train_sexism.csv`. The model achieves ~82% F1 score on the test set.
+</Note>
+
+### Step 4: Configure Environment (Optional)
+
+Create a `.env` file in the `backend/` directory for optional features:
+
+```bash
+# Rate Limiting (optional)
+REDIS_URL=rediss://default:<token>@<host>:<port>
+
+# Logging
+LOG_LEVEL=INFO
+```
+
+<Accordion title="Setting up rate limiting">
+  Guardian API supports rate limiting via Redis (Upstash compatible). If you don't configure Redis, the API will still work but rate limiting will be disabled.
+
+  To set up Upstash:
+  1. Create a free account at [Upstash](https://upstash.com)
+  2. Create a new Redis database
+  3. Copy the Redis URL from your dashboard
+  4. Add it to your `.env` file
+</Accordion>
+
+### Step 5: Start the API
+
+```bash
+cd backend
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+The API will be available at:
+- **API**: http://localhost:8000
+- **Interactive Docs**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
+
+<Check>
+  Success! Your Guardian API is now running.
+</Check>
+
+## Test Your API
+
+### Using cURL
+
+Test the moderation endpoint:
+
+```bash
+curl -X POST "http://localhost:8000/v1/moderate/text" \
+  -H "Content-Type: application/json" \
+  -d '{"text": "This is a sample text to moderate"}'
+```
+
+### Using the Interactive Docs
+
+1. Navigate to http://localhost:8000/docs
+2. Click on `POST /v1/moderate/text`
+3. Click "Try it out"
+4. Enter your text in the request body
+5. Click "Execute"
+
+### Health Check
+
+Verify all models are loaded:
+
+```bash
+curl http://localhost:8000/v1/health
+```
+
+Expected response:
+```json
+{
+  "status": "healthy",
+  "models": {
+    "sexism_classifier": "loaded",
+    "toxicity_model": "loaded",
+    "rule_engine": "loaded"
+  }
+}
+```
+
+## Example Response
+
+Here's what a typical moderation response looks like:
+
+```json
+{
+  "text": "This is a sample text to moderate",
+  "label": {
+    "sexism": {
+      "score": 0.12,
+      "severity": "low",
+      "model_version": "sexism_lasso_v1",
+      "threshold_met": false
+    },
+    "toxicity": {
+      "overall": 0.08,
+      "insult": 0.05,
+      "threat": 0.02,
+      "identity_attack": 0.03,
+      "profanity": 0.04,
+      "model_version": "toxic_roberta_v1"
+    },
+    "rules": {
+      "slur_detected": false,
+      "threat_detected": false,
+      "self_harm_flag": false,
+      "profanity_flag": false,
+      "caps_abuse": false,
+      "character_repetition": false,
+      "model_version": "rules_v1"
+    }
+  },
+  "ensemble": {
+    "summary": "likely_safe",
+    "primary_issue": null,
+    "score": 0.10,
+    "severity": "low"
+  },
+  "meta": {
+    "processing_time_ms": 24,
+    "models_used": [
+      "sexism_lasso_v1",
+      "toxic_roberta_v1",
+      "rules_v1"
+    ]
+  }
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Architecture" icon="sitemap" href="/concepts/architecture">
+    Learn how the multi-model system works
+  </Card>
+  <Card title="API Reference" icon="book" href="/api-reference/moderate-text">
+    Explore all available endpoints
+  </Card>
+  <Card title="Python SDK" icon="python" href="/sdks/python">
+    Use the Python SDK in your application
+  </Card>
+  <Card title="Configuration" icon="gear" href="/configuration/environment">
+    Configure rate limiting and other features
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Models not loading">
+    Ensure you've run the training script:
+    ```bash
+    python scripts/train_and_save_sexism_model.py
+    ```
+    Check that the model files exist in `backend/app/models/sexism/`
+  </Accordion>
+
+  <Accordion title="CUDA errors">
+    If you encounter CUDA errors, the toxicity model will automatically fall back to CPU. To use GPU:
+
+    1. Ensure you have a CUDA-capable GPU
+    2. Install CUDA toolkit (12.1 recommended)
+    3. Install PyTorch with CUDA support:
+       ```bash
+       pip install torch==2.1.0+cu121 --index-url https://download.pytorch.org/whl/cu121
+       ```
+    4. Verify CUDA is available:
+       ```bash
+       python -c "import torch; print(torch.cuda.is_available())"
+       ```
+  </Accordion>
+
+  <Accordion title="Port already in use">
+    If port 8000 is already in use, specify a different port:
+    ```bash
+    uvicorn app.main:app --reload --host 0.0.0.0 --port 8080
+    ```
+  </Accordion>
+</AccordionGroup>

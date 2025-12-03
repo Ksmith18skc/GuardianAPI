@@ -1,0 +1,321 @@
+---
+title: "Architecture"
+description: "Guardian API's multi-model architecture"
+---
+
+## Overview
+
+Guardian API uses a sophisticated **multi-model ensemble architecture** that combines machine learning models and rule-based heuristics to provide comprehensive content moderation.
+
+## System Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        Client Request                        │
+│                  POST /v1/moderate/text                      │
+└──────────────────────────┬──────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Preprocessing Layer                       │
+│  • URL removal      • Mention removal    • Emoji handling   │
+│  • Normalization    • Feature extraction                    │
+└──────────────────────────┬──────────────────────────────────┘
+                           │
+              ┌────────────┼────────────┐
+              │            │            │
+              ▼            ▼            ▼
+        ┌─────────┐  ┌─────────┐  ┌─────────┐
+        │ Model 1 │  │ Model 2 │  │ Model 3 │
+        │ Sexism  │  │Toxicity │  │  Rules  │
+        │  LASSO  │  │RoBERTa  │  │ Engine  │
+        └────┬────┘  └────┬────┘  └────┬────┘
+             │            │            │
+             └────────────┼────────────┘
+                          ▼
+              ┌────────────────────┐
+              │    Model 4         │
+              │  Ensemble Layer    │
+              │  • Score fusion    │
+              │  • Conflict res.   │
+              │  • Severity calc.  │
+              └──────────┬─────────┘
+                         │
+                         ▼
+              ┌───────────────────┐
+              │  JSON Response    │
+              │  • Labels         │
+              │  • Scores         │
+              │  • Ensemble       │
+              │  • Metadata       │
+              └───────────────────┘
+```
+
+## Components
+
+### 1. Preprocessing Layer
+
+The preprocessing layer prepares text for model inference:
+
+<Accordion title="Preprocessing Steps">
+  **Text Cleaning:**
+  - Removes URLs (`http://`, `https://`, `www.`)
+  - Removes user mentions (`@username`)
+  - Handles emojis (converts to descriptions)
+  - Normalizes whitespace
+  - Converts to lowercase
+
+  **Feature Extraction:**
+  - Text length
+  - Caps abuse detection (>70% uppercase)
+  - Character repetition detection (3+ repeated chars)
+  - Exclamation mark count
+  - Sentiment indicators
+
+  **Code Location:** `backend/app/core/preprocessing.py`
+</Accordion>
+
+### 2. Model Layer
+
+Three independent models analyze the content in parallel:
+
+<CardGroup cols={3}>
+  <Card title="Sexism Classifier" icon="1">
+    **Type**: LASSO Regression
+
+    **Training**: ~40k tweets
+
+    **Features**: 2500 n-grams (1-2)
+
+    **Output**: Binary classification + confidence score
+
+    **Threshold**: 0.400
+  </Card>
+
+  <Card title="Toxicity Model" icon="2">
+    **Type**: HuggingFace Transformer
+
+    **Model**: unitary/unbiased-toxic-roberta
+
+    **Labels**: 6 toxicity categories
+
+    **Device**: CUDA if available
+
+    **Fallback**: CPU with warning
+  </Card>
+
+  <Card title="Rule Engine" icon="3">
+    **Type**: Heuristic-based
+
+    **Rules**: JSON configuration files
+
+    **Checks**: Slurs, threats, self-harm, profanity
+
+    **Pattern Matching**: Regex + exact matching
+
+    **Extensible**: Easy to add new rules
+  </Card>
+</CardGroup>
+
+### 3. Ensemble Layer
+
+The ensemble layer combines outputs from all three models:
+
+<Steps>
+  <Step title="Score Aggregation">
+    Weighted fusion of model scores:
+    - **35%** Sexism classifier
+    - **35%** Toxicity model
+    - **30%** Rule engine
+
+    ```python
+    ensemble_score = (
+        0.35 * sexism_score +
+        0.35 * toxicity_score +
+        0.30 * rule_score
+    )
+    ```
+  </Step>
+
+  <Step title="Conflict Resolution">
+    Rule-based detections override low model scores for critical issues:
+    - Threat detected → Override ensemble
+    - Self-harm detected → Override ensemble
+    - Slur detected → Boost ensemble score
+  </Step>
+
+  <Step title="Severity Calculation">
+    Maps scores to severity levels:
+    - **0.0 - 0.3**: Low
+    - **0.3 - 0.6**: Moderate
+    - **0.6 - 1.0**: High
+  </Step>
+
+  <Step title="Primary Issue">
+    Identifies the main concern based on highest individual model score
+  </Step>
+</Steps>
+
+**Code Location:** `backend/app/core/ensemble.py`
+
+### 4. Response Layer
+
+Structured JSON response with comprehensive moderation data.
+
+See [Response Structure](/concepts/response-structure) for details.
+
+## Design Principles
+
+### Parallel Processing
+
+All models run in parallel for optimal performance:
+
+<CodeGroup>
+```python Python Example
+# Models run simultaneously
+sexism_result = sexism_model.predict(text)
+toxicity_result = toxicity_model.predict(text)
+rules_result = rule_engine.check(text)
+
+# Results combined in ensemble
+final = ensemble.aggregate(sexism_result, toxicity_result, rules_result)
+```
+</CodeGroup>
+
+### Fail-Safe Design
+
+- **Model failures don't crash the API**
+- Toxicity model falls back to CPU if GPU unavailable
+- Rate limiting fails open (allows requests if Redis down)
+- Individual model errors logged but don't block response
+
+### Extensibility
+
+Easy to add new models or rules:
+
+1. **New ML Model**: Implement in `backend/app/models/`
+2. **New Rules**: Add JSON file in `backend/app/models/rules/`
+3. **New Ensemble Logic**: Modify `backend/app/core/ensemble.py`
+
+### Performance
+
+<CardGroup cols={2}>
+  <Card title="Response Time" icon="clock">
+    **Average**: 20-40ms
+
+    **With GPU**: 15-25ms
+
+    **Batch requests**: 5-10ms per text
+  </Card>
+
+  <Card title="Throughput" icon="gauge">
+    **Single instance**: ~50 req/sec
+
+    **With rate limiting**: Configurable
+
+    **Scalable**: Horizontal scaling supported
+  </Card>
+</CardGroup>
+
+## Technology Stack
+
+| Layer | Technology | Purpose |
+|-------|-----------|---------|
+| **API Framework** | FastAPI | REST API, async support |
+| **Server** | Uvicorn | ASGI server |
+| **ML Framework** | PyTorch, Scikit-learn | Model inference |
+| **NLP** | HuggingFace Transformers | Toxicity detection |
+| **Rate Limiting** | Redis (Upstash) | Optional rate limiting |
+| **Validation** | Pydantic v2 | Request/response validation |
+
+## Deployment Architecture
+
+<Tabs>
+  <Tab title="Single Instance">
+    ```
+    ┌────────────────┐
+    │   Uvicorn      │
+    │   (Port 8000)  │
+    └────────┬───────┘
+             │
+    ┌────────▼───────┐
+    │  FastAPI App   │
+    │  • Models      │
+    │  • Endpoints   │
+    └────────┬───────┘
+             │
+    ┌────────▼───────┐
+    │   Redis        │
+    │  (Rate Limit)  │
+    └────────────────┘
+    ```
+
+    **Best for**: Development, small-scale production
+
+    **Capacity**: ~50 requests/second
+  </Tab>
+
+  <Tab title="Load Balanced">
+    ```
+    ┌─────────────┐
+    │Load Balancer│
+    └──────┬──────┘
+           │
+    ┌──────┼──────┐
+    │      │      │
+    ▼      ▼      ▼
+    [API] [API] [API]
+      │      │      │
+      └──────┼──────┘
+             │
+        ┌────▼────┐
+        │  Redis  │
+        └─────────┘
+    ```
+
+    **Best for**: High-traffic production
+
+    **Capacity**: Scales horizontally
+
+    **Requires**: Shared Redis instance
+  </Tab>
+
+  <Tab title="Containerized">
+    ```
+    ┌──────────────────┐
+    │  Docker Compose  │
+    ├──────────────────┤
+    │  ┌────────────┐  │
+    │  │ API Service│  │
+    │  └──────┬─────┘  │
+    │         │        │
+    │  ┌──────▼─────┐  │
+    │  │Redis Service│ │
+    │  └────────────┘  │
+    └──────────────────┘
+    ```
+
+    **Best for**: Easy deployment, reproducibility
+
+    **Requires**: Docker, Docker Compose
+
+    **Portable**: Run anywhere
+  </Tab>
+</Tabs>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Models" icon="brain" href="/concepts/models">
+    Deep dive into each model
+  </Card>
+  <Card title="Ensemble" icon="layer-group" href="/concepts/ensemble">
+    Learn about ensemble logic
+  </Card>
+  <Card title="Response Structure" icon="code" href="/concepts/response-structure">
+    Understand API responses
+  </Card>
+  <Card title="API Reference" icon="book" href="/api-reference/moderate-text">
+    Explore API endpoints
+  </Card>
+</CardGroup>

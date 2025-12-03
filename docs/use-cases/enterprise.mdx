@@ -1,0 +1,364 @@
+---
+title: "Enterprise Integration"
+description: "Enterprise-grade content moderation at scale"
+---
+
+## Overview
+
+Guardian API is designed for enterprise deployment with support for high-volume processing, custom models, and on-premise installation. This guide covers enterprise integration patterns and deployment strategies.
+
+## Enterprise Features
+
+<CardGroup cols={2}>
+  <Card title="High-Volume Processing" icon="gauge-high">
+    Process millions of texts per day with horizontal scaling
+
+    - Batch processing (up to 100 texts/request)
+    - Load balancing support
+    - Auto-scaling capabilities
+    - 99.9% uptime SLA
+  </Card>
+  <Card title="Custom Models" icon="brain">
+    Train custom models on your domain-specific data
+
+    - Industry-specific classifiers
+    - Custom rule sets
+    - Fine-tuned ensemble weights
+    - Continuous model improvement
+  </Card>
+  <Card title="On-Premise Deployment" icon="server">
+    Deploy within your infrastructure
+
+    - Docker containers
+    - Kubernetes orchestration
+    - Air-gapped environments
+    - Full data sovereignty
+  </Card>
+  <Card title="Advanced Analytics" icon="chart-line">
+    Comprehensive moderation analytics
+
+    - Real-time dashboards
+    - Trend analysis
+    - False positive tracking
+    - Custom reporting
+  </Card>
+</CardGroup>
+
+## Deployment Architectures
+
+### Cloud-Native Architecture
+
+```
+┌─────────────────┐
+│  Load Balancer  │
+└────────┬────────┘
+         │
+    ┌────┼────┐
+    │    │    │
+    ▼    ▼    ▼
+  [API][API][API]  ← Auto-scaling
+    │    │    │
+    └────┼────┘
+         │
+    ┌────▼────┐
+    │  Redis  │  ← Shared cache
+    └─────────┘
+```
+
+**Benefits:**
+- Horizontal scaling
+- High availability
+- Geographic distribution
+- Managed infrastructure
+
+**Setup:**
+1. Deploy multiple API instances
+2. Configure shared Redis for rate limiting
+3. Set up load balancer
+4. Enable auto-scaling rules
+
+### On-Premise Deployment
+
+```
+┌──────────────────┐
+│  Your Datacenter │
+├──────────────────┤
+│  ┌────────────┐  │
+│  │  Guardian  │  │
+│  │    API     │  │
+│  └──────┬─────┘  │
+│         │        │
+│  ┌──────▼─────┐  │
+│  │   Redis    │  │
+│  └────────────┘  │
+└──────────────────┘
+```
+
+**Benefits:**
+- Full data control
+- Regulatory compliance
+- No external dependencies
+- Custom security policies
+
+**Setup:**
+1. Deploy Docker containers
+2. Configure internal network
+3. Set up monitoring
+4. Implement backup strategy
+
+### Hybrid Architecture
+
+Mix cloud and on-premise for optimal flexibility.
+
+**Use Cases:**
+- Sensitive data → On-premise
+- High-volume bulk → Cloud
+- Real-time moderation → Edge locations
+
+## Integration Examples
+
+### Enterprise Chat Platform
+
+```python
+from guardian_api import GuardianClient
+from redis import Redis
+import asyncio
+
+class EnterpriseModeration:
+    def __init__(self):
+        self.client = GuardianClient(
+            base_url="https://guardian.internal.corp"
+        )
+        self.cache = Redis(host='redis.internal.corp')
+
+    async def moderate_message(self, message_id, text):
+        # Check cache first
+        cached = self.cache.get(f"moderation:{message_id}")
+        if cached:
+            return cached
+
+        # Moderate
+        result = self.client.moderate_text(text)
+
+        # Cache result (1 hour)
+        self.cache.setex(
+            f"moderation:{message_id}",
+            3600,
+            json.dumps(result)
+        )
+
+        # Log to analytics
+        await self.log_moderation(message_id, result)
+
+        return result
+
+    async def bulk_moderate_history(self, messages):
+        # Process in batches of 100
+        batches = [messages[i:i+100] for i in range(0, len(messages), 100)]
+
+        results = []
+        for batch in batches:
+            texts = [m.text for m in batch]
+            batch_results = self.client.moderate_batch(texts)
+            results.extend(batch_results["results"])
+
+        return results
+```
+
+### E-Commerce Review System
+
+```javascript
+import { GuardianClient } from 'guardian-api-sdk';
+
+class ReviewModerationService {
+  constructor() {
+    this.client = new GuardianClient({
+      baseUrl: 'https://guardian-api.company.com',
+      timeout: 30000
+    });
+  }
+
+  async moderateReview(review) {
+    const result = await this.client.moderateText(review.text);
+
+    // Store moderation metadata
+    await this.db.reviews.update(review.id, {
+      moderationScore: result.ensemble.score,
+      moderationSummary: result.ensemble.summary,
+      primaryIssue: result.ensemble.primary_issue,
+      moderatedAt: new Date()
+    });
+
+    // Auto-approve or queue for review
+    if (result.ensemble.summary === 'likely_safe') {
+      await this.approveReview(review.id);
+    } else if (result.ensemble.summary === 'highly_harmful') {
+      await this.rejectReview(review.id, result);
+    } else {
+      await this.queueForReview(review.id, result);
+    }
+
+    return result;
+  }
+
+  async bulkModerateReviews(productId) {
+    const reviews = await this.db.reviews.find({
+      productId,
+      moderated: false
+    });
+
+    const texts = reviews.map(r => r.text);
+    const results = await this.client.moderateBatch(texts);
+
+    // Process results
+    await Promise.all(
+      results.results.map((result, index) =>
+        this.processReviewResult(reviews[index], result)
+      )
+    );
+  }
+}
+```
+
+## Custom Model Training
+
+For enterprise customers, we can train custom models on your data:
+
+### Process
+
+<Steps>
+  <Step title="Data Collection">
+    Provide labeled training data (minimum 10,000 examples)
+
+    Format: CSV with columns `text`, `label`
+  </Step>
+
+  <Step title="Model Training">
+    We train a custom LASSO classifier on your data
+
+    - Optimized thresholds
+    - Cross-validation
+    - Performance benchmarking
+  </Step>
+
+  <Step title="Integration">
+    Deploy custom model alongside standard models
+
+    - Separate endpoint: `/v1/moderate/custom`
+    - Or replace default classifier
+  </Step>
+
+  <Step title="Continuous Improvement">
+    Regular retraining with new data
+
+    - Monthly updates
+    - Performance monitoring
+    - A/B testing
+  </Step>
+</Steps>
+
+## SLA & Support
+
+### Service Level Agreement
+
+| Metric | Target |
+|--------|--------|
+| **Uptime** | 99.9% |
+| **Response Time** | <50ms (p95) |
+| **Support Response** | <4 hours |
+| **Critical Issues** | <1 hour |
+
+### Enterprise Support
+
+<CardGroup cols={2}>
+  <Card title="24/7 Support" icon="headset">
+    Round-the-clock technical support
+
+    - Dedicated Slack channel
+    - Priority ticket queue
+    - Emergency hotline
+  </Card>
+  <Card title="Custom SLA" icon="file-contract">
+    Tailored service agreements
+
+    - Custom uptime guarantees
+    - Performance benchmarks
+    - Penalty clauses
+  </Card>
+  <Card title="Technical Account Manager" icon="user-tie">
+    Dedicated point of contact
+
+    - Quarterly business reviews
+    - Architecture guidance
+    - Feature requests
+  </Card>
+  <Card title="Training & Onboarding" icon="graduation-cap">
+    Comprehensive team training
+
+    - API integration workshops
+    - Best practices sessions
+    - Documentation reviews
+  </Card>
+</CardGroup>
+
+## Security & Compliance
+
+### Data Security
+
+<AccordionGroup>
+  <Accordion title="Encryption">
+    - TLS 1.3 for data in transit
+    - AES-256 for data at rest
+    - Key rotation every 90 days
+  </Accordion>
+
+  <Accordion title="Access Control">
+    - API key authentication
+    - IP whitelisting
+    - Role-based access control (RBAC)
+    - Audit logging
+  </Accordion>
+
+  <Accordion title="Data Privacy">
+    - No data retention by default
+    - GDPR compliance
+    - CCPA compliance
+    - Optional data anonymization
+  </Accordion>
+</AccordionGroup>
+
+### Compliance Certifications
+
+- SOC 2 Type II (in progress)
+- ISO 27001 (planned)
+- GDPR compliant
+- HIPAA available for healthcare
+
+## Pricing
+
+Enterprise pricing is customized based on:
+
+- **Volume**: Requests per month
+- **SLA**: Uptime guarantees
+- **Support**: Level of support required
+- **Deployment**: Cloud vs. on-premise
+- **Custom Models**: Training requirements
+
+Contact: enterprise@guardian-api.example
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Schedule Demo" icon="calendar" href="https://github.com/Ksmith18skc/GuardianAPI">
+    Book a technical demo with our team
+  </Card>
+  <Card title="Architecture Review" icon="sitemap" href="/concepts/architecture">
+    Review technical architecture
+  </Card>
+  <Card title="Contact Sales" icon="envelope" href="https://github.com/Ksmith18skc/GuardianAPI">
+    Discuss enterprise requirements
+  </Card>
+  <Card title="View Documentation" icon="book" href="/quickstart">
+    Explore technical documentation
+  </Card>
+</CardGroup>

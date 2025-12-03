@@ -1,0 +1,279 @@
+---
+title: "Content Moderation"
+description: "Real-time content moderation for user-generated content"
+---
+
+## Overview
+
+Guardian API provides real-time content moderation for platforms handling user-generated content. Whether you're running a social network, forum, chat application, or content platform, Guardian API helps maintain safe and healthy communities.
+
+## Common Use Cases
+
+### Social Media Platforms
+
+<Card title="Real-Time Comment Moderation" icon="comments">
+Moderate user comments and posts before they go live or flag them for review.
+
+**Implementation:**
+- Moderate all comments in real-time before posting
+- Auto-block highly harmful content
+- Queue moderate content for human review
+- Allow safe content immediately
+
+**Example:**
+```python
+def moderate_comment(comment_text):
+    result = client.moderate_text(comment_text)
+
+    if result["ensemble"]["summary"] == "highly_harmful":
+        return "BLOCK"
+    elif result["ensemble"]["summary"] == "likely_harmful":
+        return "REVIEW"
+    else:
+        return "APPROVE"
+```
+</Card>
+
+### Chat Applications
+
+<Card title="Real-Time Message Filtering" icon="message">
+Filter messages in real-time to prevent harassment and abuse.
+
+**Features:**
+- Instant message analysis (20-40ms)
+- Multi-category detection
+- Critical issue alerts (threats, self-harm)
+- Batch processing for message history
+
+**Example:**
+```javascript
+async function filterMessage(message) {
+  const result = await client.moderateText(message);
+
+  if (result.ensemble.primary_issue === 'threat' ||
+      result.ensemble.primary_issue === 'self_harm') {
+    // Alert moderators immediately
+    await alertModerators(result);
+  }
+
+  return result.ensemble.summary !== 'highly_harmful';
+}
+```
+</Card>
+
+### Content Publishing Platforms
+
+<Card title="Pre-Publication Screening" icon="file-check">
+Screen articles, reviews, and user submissions before publication.
+
+**Workflow:**
+1. User submits content
+2. Guardian API analyzes text
+3. Safe content → Auto-approve
+4. Flagged content → Human review
+5. Highly harmful → Auto-reject
+
+**Example:**
+```python
+def screen_submission(submission):
+    result = client.moderate_text(submission.content)
+
+    submission.moderation_score = result["ensemble"]["score"]
+    submission.primary_issue = result["ensemble"]["primary_issue"]
+
+    if result["ensemble"]["summary"] == "likely_safe":
+        submission.status = "APPROVED"
+    elif result["ensemble"]["summary"] == "highly_harmful":
+        submission.status = "REJECTED"
+    else:
+        submission.status = "PENDING_REVIEW"
+
+    submission.save()
+```
+</Card>
+
+## Integration Patterns
+
+### Pattern 1: Synchronous Blocking
+
+Block content in real-time before it's posted.
+
+```python
+@app.post("/api/comments")
+def create_comment(comment: CommentCreate):
+    # Moderate first
+    moderation = client.moderate_text(comment.text)
+
+    if moderation["ensemble"]["summary"] == "highly_harmful":
+        raise HTTPException(
+            status_code=400,
+            detail="Content violates community guidelines"
+        )
+
+    # Save comment
+    return save_comment(comment)
+```
+
+**Best for:**
+- High-risk platforms
+- Strict moderation policies
+- Critical safety requirements
+
+### Pattern 2: Asynchronous Review
+
+Post content immediately, flag for review.
+
+```python
+@app.post("/api/comments")
+async def create_comment(comment: CommentCreate):
+    # Save comment first
+    saved_comment = save_comment(comment)
+
+    # Moderate asynchronously
+    moderation = await moderate_async(comment.text)
+
+    if moderation["ensemble"]["summary"] != "likely_safe":
+        queue_for_review(saved_comment, moderation)
+
+    return saved_comment
+```
+
+**Best for:**
+- User experience priority
+- Low false-positive tolerance
+- High volume platforms
+
+### Pattern 3: Tiered Response
+
+Different actions based on severity.
+
+```python
+def handle_moderation_result(content, result):
+    summary = result["ensemble"]["summary"]
+    issue = result["ensemble"]["primary_issue"]
+
+    if summary == "highly_harmful":
+        if issue in ["threat", "self_harm"]:
+            # Critical: Block + Alert
+            block_content(content)
+            alert_moderators_urgent(content, result)
+        else:
+            # Block + Standard Review
+            block_content(content)
+            queue_for_review(content, result)
+
+    elif summary == "likely_harmful":
+        # Allow but flag
+        flag_content(content, result)
+        queue_for_review(content, result)
+
+    else:
+        # Allow
+        approve_content(content)
+```
+
+**Best for:**
+- Nuanced moderation needs
+- Multiple content types
+- Large moderation teams
+
+## Batch Processing
+
+For analyzing existing content or bulk imports:
+
+```python
+# Process comments in batches
+comments = Comment.objects.filter(moderated=False)[:100]
+texts = [c.text for c in comments]
+
+batch_results = client.moderate_batch(texts)
+
+for comment, result in zip(comments, batch_results["results"]):
+    comment.moderation_score = result["ensemble"]["score"]
+    comment.moderation_summary = result["ensemble"]["summary"]
+    comment.moderated = True
+    comment.save()
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Set Clear Thresholds">
+    Define clear thresholds for auto-block, review, and approve actions:
+
+    ```python
+    THRESHOLDS = {
+        "auto_block": ["highly_harmful"],
+        "review": ["likely_harmful", "potentially_harmful"],
+        "approve": ["likely_safe"]
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Provide User Feedback">
+    When blocking content, explain why:
+
+    ```python
+    if result["ensemble"]["primary_issue"] == "profanity":
+        return "Your comment contains profanity and cannot be posted."
+    elif result["ensemble"]["primary_issue"] == "sexism":
+        return "Your comment violates our anti-discrimination policy."
+    ```
+  </Accordion>
+
+  <Accordion title="Monitor False Positives">
+    Track false positives and adjust thresholds:
+
+    ```python
+    if user_appeals(comment):
+        # Log for analysis
+        log_false_positive(comment, moderation_result)
+
+        # Human review
+        queue_for_manual_review(comment)
+    ```
+  </Accordion>
+
+  <Accordion title="Combine with Human Moderation">
+    Use Guardian API as a first pass, not a replacement for human moderators:
+
+    - Auto-approve clearly safe content
+    - Auto-block clearly harmful content
+    - Queue everything else for human review
+  </Accordion>
+</AccordionGroup>
+
+## Performance Considerations
+
+<CardGroup cols={2}>
+  <Card title="Response Time" icon="clock">
+    **Single Request**: 20-40ms
+    **Batch (100 texts)**: 500-800ms
+
+    Use batch processing when possible
+  </Card>
+  <Card title="Rate Limiting" icon="gauge">
+    Configure rate limits based on your traffic:
+
+    - Low traffic: 100 req/min
+    - Medium: 500 req/min
+    - High: Custom scaling
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Python SDK" icon="python" href="/sdks/python">
+    Integrate with Python
+  </Card>
+  <Card title="JavaScript SDK" icon="js" href="/sdks/javascript">
+    Integrate with JavaScript
+  </Card>
+  <Card title="API Reference" icon="book" href="/api-reference/moderate-text">
+    Explore API endpoints
+  </Card>
+  <Card title="Enterprise" icon="building" href="/use-cases/enterprise">
+    Enterprise integrations
+  </Card>
+</CardGroup>

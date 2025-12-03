@@ -1,0 +1,224 @@
+---
+title: "Python SDK"
+description: "Python client library for Guardian API"
+---
+
+## Installation
+
+```bash
+cd sdks/python
+pip install .
+```
+
+Or install directly from the repository:
+```bash
+pip install git+https://github.com/Ksmith18skc/GuardianAPI.git#subdirectory=sdks/python
+```
+
+## Quick Start
+
+```python
+from guardian_api import GuardianClient
+
+# Initialize client
+client = GuardianClient(base_url="http://localhost:8000")
+
+# Moderate single text
+result = client.moderate_text("Your text to moderate")
+print(result)
+
+# Moderate batch
+texts = ["Text 1", "Text 2", "Text 3"]
+batch_results = client.moderate_batch(texts)
+print(batch_results)
+```
+
+## API Reference
+
+### GuardianClient
+
+The main client class for interacting with Guardian API.
+
+```python
+class GuardianClient:
+    def __init__(self, base_url: str, timeout: int = 30):
+        """
+        Initialize Guardian API client
+
+        Args:
+            base_url: API base URL (e.g., "http://localhost:8000")
+            timeout: Request timeout in seconds (default: 30)
+        """
+```
+
+### moderate_text()
+
+Moderate a single text.
+
+```python
+def moderate_text(self, text: str) -> dict:
+    """
+    Moderate a single text
+
+    Args:
+        text: Text to moderate
+
+    Returns:
+        dict: Moderation response with label, ensemble, and meta
+
+    Raises:
+        GuardianAPIError: If the API request fails
+    """
+```
+
+**Example**:
+```python
+result = client.moderate_text("Women belong in the kitchen")
+
+# Access ensemble decision
+print(result["ensemble"]["summary"])  # "highly_harmful"
+print(result["ensemble"]["primary_issue"])  # "sexism"
+print(result["ensemble"]["score"])  # 0.689
+
+# Access individual model scores
+print(result["label"]["sexism"]["score"])  # 0.847
+print(result["label"]["toxicity"]["overall"])  # 0.621
+```
+
+### moderate_batch()
+
+Moderate multiple texts in batch.
+
+```python
+def moderate_batch(self, texts: List[str]) -> dict:
+    """
+    Moderate multiple texts in batch
+
+    Args:
+        texts: List of texts to moderate
+
+    Returns:
+        dict: Batch response with results array and metadata
+
+    Raises:
+        GuardianAPIError: If the API request fails
+    """
+```
+
+**Example**:
+```python
+texts = [
+    "I love this product!",
+    "This is terrible",
+    "Women belong in the kitchen"
+]
+
+batch_results = client.moderate_batch(texts)
+
+for result in batch_results["results"]:
+    print(f"Text: {result['text']}")
+    print(f"Summary: {result['ensemble']['summary']}")
+    print(f"Score: {result['ensemble']['score']}")
+    print("---")
+```
+
+## Error Handling
+
+The SDK raises `GuardianAPIError` for API errors:
+
+```python
+from guardian_api import GuardianClient, GuardianAPIError
+
+client = GuardianClient(base_url="http://localhost:8000")
+
+try:
+    result = client.moderate_text("Your text")
+except GuardianAPIError as e:
+    print(f"API Error: {e}")
+    print(f"Status Code: {e.status_code}")
+    print(f"Response: {e.response}")
+```
+
+## Advanced Usage
+
+### Custom Timeout
+
+```python
+# Set custom timeout
+client = GuardianClient(
+    base_url="http://localhost:8000",
+    timeout=60  # 60 seconds
+)
+```
+
+### Processing Results
+
+```python
+def handle_moderation(result):
+    """Process moderation result"""
+    ensemble = result["ensemble"]
+
+    if ensemble["summary"] == "highly_harmful":
+        return "BLOCK"
+    elif ensemble["summary"] == "likely_harmful":
+        if ensemble["primary_issue"] in ["threat", "self_harm"]:
+            return "BLOCK_AND_ALERT"
+        return "REVIEW"
+    elif ensemble["summary"] == "potentially_harmful":
+        return "FLAG"
+    return "ALLOW"
+
+result = client.moderate_text("Some text")
+action = handle_moderation(result)
+print(f"Action: {action}")
+```
+
+## Complete Example
+
+```python
+from guardian_api import GuardianClient, GuardianAPIError
+import sys
+
+def main():
+    # Initialize client
+    client = GuardianClient(base_url="http://localhost:8000")
+
+    # Sample texts
+    texts = [
+        "I love this product!",
+        "This is garbage",
+        "Women belong in the kitchen"
+    ]
+
+    try:
+        # Moderate batch
+        batch_results = client.moderate_batch(texts)
+
+        print(f"Processed {batch_results['total_processed']} texts")
+        print(f"Total time: {batch_results['processing_time_ms']}ms\n")
+
+        # Process each result
+        for result in batch_results["results"]:
+            text = result["text"]
+            ensemble = result["ensemble"]
+
+            print(f"Text: {text}")
+            print(f"  Summary: {ensemble['summary']}")
+            print(f"  Score: {ensemble['score']}")
+            print(f"  Severity: {ensemble['severity']}")
+            print(f"  Primary Issue: {ensemble['primary_issue']}")
+            print()
+
+    except GuardianAPIError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main()
+```
+
+## See Also
+
+- [API Reference](/api-reference/moderate-text) - REST API documentation
+- [JavaScript SDK](/sdks/javascript) - JavaScript/TypeScript SDK
+- [Response Structure](/concepts/response-structure) - Understanding responses

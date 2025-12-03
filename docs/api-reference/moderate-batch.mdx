@@ -1,0 +1,103 @@
+---
+title: "POST /v1/moderate/batch"
+description: "Moderate multiple texts in batch"
+---
+
+## Endpoint
+
+```
+POST /v1/moderate/batch
+```
+
+Analyzes multiple texts in a single request. More efficient than making multiple individual requests.
+
+## Request
+
+### Body Parameters
+
+<ParamField body="texts" type="array" required>
+  Array of strings to moderate
+
+  **Min items**: 1
+  **Max items**: 100 (recommended)
+  **Item type**: string
+</ParamField>
+
+### Request Example
+
+<CodeGroup>
+```bash cURL
+curl -X POST "http://localhost:8000/v1/moderate/batch" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "texts": [
+      "First text to moderate",
+      "Second text to moderate",
+      "Third text to moderate"
+    ]
+  }'
+```
+
+```python Python SDK
+from guardian_api import GuardianClient
+
+client = GuardianClient(base_url="http://localhost:8000")
+texts = [
+    "First text to moderate",
+    "Second text to moderate",
+    "Third text to moderate"
+]
+results = client.moderate_batch(texts)
+print(results)
+```
+
+```javascript JavaScript SDK
+const client = new GuardianClient({ baseUrl: 'http://localhost:8000' });
+
+const texts = [
+  'First text to moderate',
+  'Second text to moderate',
+  'Third text to moderate'
+];
+
+const results = await client.moderateBatch(texts);
+console.log(results);
+```
+</CodeGroup>
+
+## Response
+
+### Success Response (200)
+
+```json
+{
+  "results": [
+    {
+      "text": "First text to moderate",
+      "label": { ... },
+      "ensemble": { ... },
+      "meta": { ... }
+    },
+    {
+      "text": "Second text to moderate",
+      "label": { ... },
+      "ensemble": { ... },
+      "meta": { ... }
+    }
+  ],
+  "total_processed": 2,
+  "processing_time_ms": 48
+}
+```
+
+## Performance
+
+| Metric | Value |
+|--------|-------|
+| **Avg Time Per Text** | 5-10ms (in batch) |
+| **Max Batch Size** | 100 texts (recommended) |
+| **Total Time** | ~500ms for 100 texts |
+
+<Tip>
+  Batch processing is 3-4x faster per text compared to individual requests due to model loading overhead amortization.
+</Tip>

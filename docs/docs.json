@@ -1,0 +1,135 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Guardian API",
+  "colors": {
+    "primary": "#6366F1",
+    "light": "#818CF8",
+    "dark": "#4F46E5"
+  },
+  "favicon": "/favicon.svg",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "index",
+              "quickstart",
+              "installation"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/architecture",
+              "concepts/models",
+              "concepts/ensemble",
+              "concepts/response-structure"
+            ]
+          },
+          {
+            "group": "SDKs",
+            "pages": [
+              "sdks/python",
+              "sdks/javascript"
+            ]
+          },
+          {
+            "group": "Configuration",
+            "pages": [
+              "configuration/environment",
+              "configuration/rate-limiting"
+            ]
+          },
+          {
+            "group": "Use Cases",
+            "pages": [
+              "use-cases/moderation",
+              "use-cases/enterprise"
+            ]
+          },
+          {
+            "group": "About",
+            "pages": [
+              "about/authors",
+              "about/changelog"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Endpoints",
+            "pages": [
+              "api-reference/moderate-text",
+              "api-reference/moderate-batch",
+              "api-reference/health",
+              "api-reference/models"
+            ]
+          },
+          {
+            "group": "Schemas",
+            "pages": [
+              "api-reference/schemas/request",
+              "api-reference/schemas/response"
+            ]
+          }
+        ]
+      }
+    ],
+    "global": {
+      "anchors": [
+        {
+          "anchor": "GitHub",
+          "href": "https://github.com/Ksmith18skc/GuardianAPI",
+          "icon": "github"
+        },
+        {
+          "anchor": "API Playground",
+          "href": "http://localhost:8000/docs",
+          "icon": "play"
+        }
+      ]
+    }
+  },
+  "logo": {
+    "light": "/logo/guardian-light.svg",
+    "dark": "/logo/guardian-dark.svg"
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "GitHub",
+        "href": "https://github.com/Ksmith18skc/GuardianAPI"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "View on GitHub",
+      "href": "https://github.com/Ksmith18skc/GuardianAPI"
+    }
+  },
+  "contextual": {
+    "options": [
+     "copy",
+     "view",
+     "chatgpt",
+     "claude",
+     "perplexity",
+     "mcp",
+     "cursor",
+     "vscode"
+   ]
+  },
+  "footer": {
+    "copyright": "© 2025 Guardian API. Built by Kory Smith.",
+    "socials": {
+      "github": "https://github.com/Ksmith18skc/GuardianAPI"
+    }
+  }
+}

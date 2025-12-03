@@ -1,0 +1,50 @@
+---
+title: "GET /v1/health"
+description: "Health check endpoint"
+---
+
+## Endpoint
+
+```
+GET /v1/health
+```
+
+Returns the health status of the API and whether all models are loaded.
+
+## Request
+
+No parameters required.
+
+### Request Example
+
+<CodeGroup>
+```bash cURL
+curl http://localhost:8000/v1/health
+```
+
+```python Python
+import requests
+response = requests.get("http://localhost:8000/v1/health")
+print(response.json())
+```
+</CodeGroup>
+
+## Response
+
+### Success Response (200)
+
+```json
+{
+  "status": "healthy",
+  "version": "1.0.0",
+  "models_loaded": true
+}
+```
+
+### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `status` | string | `"healthy"` if all models loaded, `"degraded"` otherwise |
+| `version` | string | API version |
+| `models_loaded` | boolean | Whether all models are loaded successfully |
