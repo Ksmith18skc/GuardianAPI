@@ -19,7 +19,7 @@ const DecryptText = ({ text, speed = 50 }: { text: string, speed?: number }) => 
     useEffect(() => {
         let i = 0;
         const timer = setInterval(() => {
-            setDisplay(prev => {
+            setDisplay(() => {
                 if (i >= text.length) {
                     clearInterval(timer);
                     return text;

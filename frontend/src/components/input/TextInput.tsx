@@ -2,7 +2,6 @@
  * Text input component with scanning beam overlay
  */
 
-import { useState } from 'react';
 import { ScanningBeam } from './ScanningBeam';
 
 interface TextInputProps {

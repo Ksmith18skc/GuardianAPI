@@ -13,14 +13,21 @@ import type {
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
 
 export class APIError extends Error {
+  status?: number;
+  response?: any;
+  type: 'network' | 'cors' | 'http' | 'parse' | 'unknown';
+
   constructor(
     message: string,
-    public status?: number,
-    public response?: any,
-    public type: 'network' | 'cors' | 'http' | 'parse' | 'unknown' = 'unknown'
+    status?: number,
+    response?: any,
+    type: 'network' | 'cors' | 'http' | 'parse' | 'unknown' = 'unknown'
   ) {
     super(message);
     this.name = 'APIError';
+    this.status = status;
+    this.response = response;
+    this.type = type;
   }
 }
 

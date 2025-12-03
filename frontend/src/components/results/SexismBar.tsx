@@ -10,7 +10,7 @@ interface SexismBarProps {
   thresholdMet?: boolean;
 }
 
-export function SexismBar({ score, severity, thresholdMet }: SexismBarProps) {
+export function SexismBar({ score, thresholdMet }: SexismBarProps) {
   const getColor = () => {
     if (score < 0.3) return 'var(--neon-tertiary)';
     if (score < 0.6) return 'var(--color-warning)';

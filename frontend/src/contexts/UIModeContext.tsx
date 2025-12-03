@@ -2,7 +2,8 @@
  * UI Mode Context - Manages switching between Playground and Terminal modes
  */
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
+import type { ReactNode } from 'react';
 
 export type UIMode = 'playground' | 'terminal';
 

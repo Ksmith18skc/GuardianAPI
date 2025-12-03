@@ -39,6 +39,7 @@ ENV/
 
 # Model files (large binary files)
 *.pkl
+!backend/app/models/sexism/*.pkl  # Allow sexism model files for deployment
 *.h5
 *.pt
 *.pth
