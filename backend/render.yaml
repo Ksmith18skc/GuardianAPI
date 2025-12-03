@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: guardian-api
+    env: python
+    pythonVersion: 3.11.10
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: CORS_ORIGINS
+        value: https://guardian.korymsmith.dev,http://localhost:5173,http://127.0.0.1:5173
+      - key: LOG_LEVEL
+        value: INFO
+      - key: REDIS_URL
+        sync: false  # Set manually in Render dashboard if using rate limiting
+
