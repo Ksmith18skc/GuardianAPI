@@ -19,7 +19,7 @@ class ToxicityModel:
         self.tokenizer: Optional[AutoTokenizer] = None
         self.model: Optional[AutoModelForSequenceClassification] = None
         self.device: str = "cuda" if torch.cuda.is_available() else "cpu"
-        self.model_version: str = "toxic_roberta_v1"
+        self.model_version: str = "distilroberta_toxic_v1"  # Updated for new model
         self.loaded: bool = False
         
         # Label mapping for multi-label classification
@@ -49,9 +49,36 @@ class ToxicityModel:
             
             logger.info(f"Loading toxicity model: {model_name}")
             self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-            self.model = AutoModelForSequenceClassification.from_pretrained(model_name)
+            
+            # Load model with float16 for memory efficiency (reduces memory by ~50%)
+            # This is especially important for low-memory hosting environments
+            try:
+                # Try loading with float16 if CUDA is available, otherwise use default
+                if torch.cuda.is_available():
+                    self.model = AutoModelForSequenceClassification.from_pretrained(
+                        model_name,
+                        torch_dtype=torch.float16
+                    )
+                    logger.info("Loaded model with float16 precision for memory efficiency")
+                else:
+                    # For CPU, use default dtype (float32) as float16 on CPU can be slower
+                    self.model = AutoModelForSequenceClassification.from_pretrained(model_name)
+                    logger.info("Loaded model with float32 precision (CPU mode)")
+            except Exception as e:
+                # Fallback to default loading if float16 fails
+                logger.warning(f"Could not load with float16, falling back to default: {e}")
+                self.model = AutoModelForSequenceClassification.from_pretrained(model_name)
+            
             self.model.to(self.device)
             self.model.eval()
+            
+            # Log model memory usage estimate
+            if hasattr(self.model, 'num_parameters'):
+                param_count = self.model.num_parameters()
+                # Rough estimate: float16 = 2 bytes per param, float32 = 4 bytes per param
+                dtype_size = 2 if torch.cuda.is_available() and self.model.dtype == torch.float16 else 4
+                estimated_mb = (param_count * dtype_size) / (1024 * 1024)
+                logger.info(f"Model estimated memory: ~{estimated_mb:.1f} MB ({param_count:,} parameters)")
             
             self.loaded = True
             logger.info(f"Successfully loaded toxicity model on {self.device}")
