@@ -190,10 +190,8 @@ This project evolved from a CSC 380 class project focused on binary classificati
 
 [Add your license here]
 
-## 👥 Authors
+## 👥 Author
 
-- Nathan Oswald
-- Jay Whitney
 - Kory Smith
 
 ---
