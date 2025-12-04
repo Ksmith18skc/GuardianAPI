@@ -157,19 +157,22 @@
 
 **Status**: ✅ Deployed and running
 
-- [x] **Backend deployment on Render.com** - Free tier, 24/7 operation
-  - FastAPI application deployed
-  - Python 3.11.10 runtime
+- [x] **Backend deployment on Google Cloud Run** - Production-ready containerized deployment
+  - FastAPI application containerized with Docker
+  - Python 3.11-slim base image
   - Environment variables configured (CORS, Redis, logging)
-  - Model files included in deployment
+  - Model files included in Docker image
   - Health check endpoint verified
+  - CPU-only inference for Cloud Run compatibility
+  - Auto-scaling with scale-to-zero capability
 - [x] **Frontend deployment on Netlify** - https://guardian.korymsmith.dev
   - Production build optimized
   - Environment variables configured
-  - Connected to Render backend API
+  - Connected to Cloud Run backend API
 - [x] **CORS configuration** - Production frontend URL whitelisted
-- [x] **Deployment documentation** - `backend/DEPLOYMENT.md` with full instructions
-- [x] **Render Blueprint** - `backend/render.yaml` for automated deployments
+- [x] **Deployment documentation** - `backend/DEPLOYMENT.md` with Cloud Run instructions
+- [x] **Cloud Build configuration** - `backend/cloudbuild.yaml` for CI/CD
+- [x] **Dockerfile** - Production-ready container configuration
 
 ## ❌ NOT YET IMPLEMENTED
 
@@ -299,7 +302,7 @@
 - **SDKs** - Python and JavaScript/TypeScript SDKs with examples
 - **Frontend Playground** - React + TypeScript application with full UI
 - **Core Documentation** - README files, code comments, OpenAPI docs
-- **Production Deployment** - Backend on Render.com, Frontend on Netlify
+- **Production Deployment** - Backend on Google Cloud Run, Frontend on Netlify
 
 ### 🟡 Mostly Complete (85%)
 - **Documentation** - Missing external documentation site (Mintlify/Docusaurus)
@@ -313,7 +316,7 @@
 **Full Platform (including Production Features)**: ~85% Complete
 
 **What's Ready**: 
-- Production-ready backend API deployed on Render.com (24/7 operation)
+- Production-ready backend API deployed on Google Cloud Run (containerized, auto-scaling)
 - Comprehensive SDKs (Python & JavaScript/TypeScript)
 - Fully functional frontend playground deployed on Netlify
 - Both UIs (Playground Mode & Terminal Mode) with theme switching
@@ -342,7 +345,7 @@
 1. **Add Production Features** - Analytics, billing, API key management
 2. **Create External Docs** - Mintlify/Docusaurus documentation site (docs repo merged)
 3. **Enhance Frontend** - Additional features, performance optimizations
-4. **Upgrade Render Service** - Consider paid tier for always-on service (no spin-down)
+4. **Optimize Cloud Run** - Configure min instances, memory allocation, and scaling policies
 
 ---
 
@@ -365,7 +368,8 @@ GuardianAPI/
     ├── vite.config.ts    ✅ Complete - Build configuration
     └── dist/             ✅ Complete - Production build for Netlify
 ├── docs/                 ✅ Complete - Mintlify documentation (merged from separate repo)
-├── backend/render.yaml   ✅ Complete - Render deployment configuration
+├── backend/Dockerfile    ✅ Complete - Production Dockerfile for Cloud Run
+├── backend/cloudbuild.yaml ✅ Complete - Cloud Build CI/CD configuration
 └── backend/DEPLOYMENT.md ✅ Complete - Deployment documentation
 ```
 

@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     PROJECT_ROOT: Path = Path(__file__).parent.parent.parent
     MODELS_DIR: Path = PROJECT_ROOT / "backend" / "app" / "models"
     SEXISM_MODEL_DIR: Path = MODELS_DIR / "sexism"
-    TOXICITY_MODEL_NAME: str = "unitary/toxic-bert"  # Smaller BERT-based model for low-memory hosting (<400MB)
+    TOXICITY_MODEL_NAME: str = "unitary/unbiased-toxic-roberta"
     RULES_DIR: Path = MODELS_DIR / "rules"
     
     # Model Configuration
@@ -59,7 +59,7 @@ class Settings(BaseSettings):
     #   2. Comma-separated string: 'https://example.com,http://localhost:3000'
     #   3. Empty/None: Falls back to default string
     # 
-    # Recommended format for Render: Comma-separated string
+    # Recommended format: Comma-separated string
     # Example: CORS_ORIGINS=https://guardian.korymsmith.dev
     # 
     # Use settings.cors_origins_list to get the parsed list for CORS middleware

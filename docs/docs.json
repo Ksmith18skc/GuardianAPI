@@ -18,7 +18,8 @@
             "pages": [
               "index",
               "quickstart",
-              "installation"
+              "installation",
+              "deployment"
             ]
           },
           {
@@ -91,7 +92,7 @@
         },
         {
           "anchor": "API Playground",
-          "href": "http://localhost:8000/docs",
+          "href": "https://guardian.korymsmith.dev",
           "icon": "play"
         }
       ]

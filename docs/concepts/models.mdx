@@ -104,7 +104,7 @@ Multi-label toxicity detection using RoBERTa
 | **Architecture** | RoBERTa (Robustly Optimized BERT) |
 | **Model Name** | `unitary/unbiased-toxic-roberta` |
 | **Type** | Multi-label classification |
-| **Device** | CUDA (GPU) if available, CPU fallback |
+| **Device** | CPU (Cloud Run compatible) |
 | **Max Length** | 512 tokens |
 | **Version** | `toxic_roberta_v1` |
 
@@ -138,11 +138,11 @@ The model detects **7 categories** of toxicity:
 
 ### Device Management
 
-<Accordion title="GPU Acceleration">
-  The toxicity model automatically uses GPU if available:
+<Accordion title="CPU Inference">
+  The toxicity model uses CPU for Cloud Run compatibility:
 
   ```python
-  device = "cuda" if torch.cuda.is_available() else "cpu"
+  device = "cpu"  # Cloud Run compatible
   model.to(device)
   ```
 
@@ -337,7 +337,7 @@ The ensemble model performs intelligent fusion of all model outputs. See [Ensemb
 | Feature | Sexism Classifier | Toxicity Model | Rule Engine |
 |---------|------------------|----------------|-------------|
 | **Type** | ML (LASSO) | ML (Transformer) | Heuristic |
-| **Speed** | Fast (~5ms) | Medium (~15ms GPU) | Fast (~2ms) |
+| **Speed** | Fast (~5ms) | Medium (~40-60ms CPU) | Fast (~2ms) |
 | **Accuracy** | High (82% F1) | High | Rule-dependent |
 | **Extensibility** | Requires retraining | Requires retraining | Easy (JSON) |
 | **Resource** | Low | Medium-High | Very Low |
