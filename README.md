@@ -1,4 +1,5 @@
-# Guardian API
+# [Guardian API]([url](https://guardian.korymsmith.dev/))
+
 
 **Multi-Model, Multi-Label Content Moderation System**
 
@@ -186,9 +187,6 @@ This project evolved from a CSC 380 class project focused on binary classificati
 - [ ] Image moderation
 - [ ] API key system and billing dashboard
 
-## 📄 License
-
-[Add your license here]
 
 ## 👥 Author
 
